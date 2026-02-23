@@ -1,59 +1,37 @@
 import React, { useState, useMemo } from 'react';
-import { FileText, Clock, GitBranch, Server, Mail, Truck, Trash2 } from 'lucide-react';
-import type { ExtractionLog, ExtractionType, TransformationType, User, UserPermissions, EmailPollingLog, WorkflowExecutionLog, ExtractionWorkflow, WorkflowStep, SftpPollingLog, ProcessedEmail } from '../types';
-import ExtractionLogsSettings from './settings/ExtractionLogsSettings';
+import { Clock, Server, Mail, Truck, Trash2 } from 'lucide-react';
+import type { User, UserPermissions, EmailPollingLog, SftpPollingLog, ProcessedEmail } from '../types';
 import EmailPollingLogsSettings from './settings/EmailPollingLogsSettings';
-import WorkflowExecutionLogsSettings from './settings/WorkflowExecutionLogsSettings';
 import ProcessedEmailsSettings from './settings/ProcessedEmailsSettings';
 import DriverCheckinLogsSettings from './settings/DriverCheckinLogsSettings';
 import PurgeLogsSettings from './settings/PurgeLogsSettings';
 
 interface LogsPageProps {
-  extractionLogs: ExtractionLog[];
-  extractionTypes: ExtractionType[];
-  transformationTypes: TransformationType[];
   users: User[];
   emailPollingLogs: EmailPollingLog[];
-  workflowExecutionLogs: WorkflowExecutionLog[];
-  workflows: ExtractionWorkflow[];
-  workflowSteps: WorkflowStep[];
   sftpPollingLogs: SftpPollingLog[];
   processedEmails: ProcessedEmail[];
   isAdmin?: boolean;
   userPermissions?: UserPermissions;
-  onRefreshLogs: () => Promise<void>;
-  onRefreshLogsWithFilters: (filters: any) => Promise<any>;
   onRefreshPollingLogs: () => Promise<any>;
-  onRefreshWorkflowLogs: () => Promise<any>;
   onRefreshSftpPollingLogs: () => Promise<any>;
   onRefreshProcessedEmails: () => Promise<any>;
 }
 
-type LogsTab = 'extraction' | 'polling' | 'workflow' | 'sftp' | 'processed' | 'checkin' | 'purge';
+type LogsTab = 'polling' | 'sftp' | 'processed' | 'checkin' | 'purge';
 
 export default function LogsPage({
-  extractionLogs,
-  extractionTypes,
-  transformationTypes,
   users,
   emailPollingLogs,
-  workflowExecutionLogs,
-  workflows,
-  workflowSteps,
   sftpPollingLogs,
   processedEmails,
   isAdmin,
   userPermissions,
-  onRefreshLogs,
-  onRefreshLogsWithFilters,
   onRefreshPollingLogs,
-  onRefreshWorkflowLogs,
   onRefreshSftpPollingLogs,
   onRefreshProcessedEmails
 }: LogsPageProps) {
   const tabPermissionMap: Record<string, keyof UserPermissions> = {
-    extraction: 'extractionLogs',
-    workflow: 'workflowLogs',
     polling: 'emailPolling',
     processed: 'processedEmails',
     sftp: 'sftpPolling',
@@ -61,8 +39,6 @@ export default function LogsPage({
   };
 
   const allTabs = [
-    { id: 'extraction' as LogsTab, label: 'Processing Logs', icon: FileText, description: 'PDF extraction and transformation activity logs' },
-    { id: 'workflow' as LogsTab, label: 'Workflow Logs', icon: GitBranch, description: 'Workflow execution logs' },
     { id: 'polling' as LogsTab, label: 'Email Polling', icon: Clock, description: 'Email monitoring activity' },
     { id: 'processed' as LogsTab, label: 'Processed Emails', icon: Mail, description: 'Processed email history' },
     { id: 'sftp' as LogsTab, label: 'SFTP Polling', icon: Server, description: 'SFTP folder monitoring logs' },
@@ -83,45 +59,22 @@ export default function LogsPage({
   }, [isAdmin, userPermissions]);
 
   const [activeTab, setActiveTab] = useState<LogsTab>(() => {
-    if (isAdmin) return 'extraction';
-    if (!userPermissions) return 'extraction';
+    if (isAdmin) return 'polling';
+    if (!userPermissions) return 'polling';
     const firstPermitted = allTabs.find(tab => {
       const permKey = tabPermissionMap[tab.id];
       return !permKey || userPermissions[permKey];
     });
-    return firstPermitted?.id ?? 'extraction';
+    return firstPermitted?.id ?? 'polling';
   });
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'extraction':
-        return (
-          <ExtractionLogsSettings
-            extractionLogs={extractionLogs}
-            extractionTypes={extractionTypes}
-            transformationTypes={transformationTypes}
-            users={users}
-            onRefresh={onRefreshLogs}
-            onRefreshWithFilters={onRefreshLogsWithFilters}
-          />
-        );
       case 'polling':
         return (
           <EmailPollingLogsSettings
             emailPollingLogs={emailPollingLogs}
             onRefreshPollingLogs={onRefreshPollingLogs}
-          />
-        );
-      case 'workflow':
-        return (
-          <WorkflowExecutionLogsSettings
-            workflowExecutionLogs={workflowExecutionLogs}
-            workflows={workflows}
-            workflowSteps={workflowSteps}
-            users={users}
-            extractionTypes={extractionTypes}
-            transformationTypes={transformationTypes}
-            onRefreshWorkflowLogs={onRefreshWorkflowLogs}
           />
         );
       case 'processed':
