@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Settings, FileText, LogOut, User, HelpCircle, Menu, BarChart3, RefreshCw, Database, Building, Package, ClipboardCheck, Building2, DollarSign, Users as UsersIcon, BookUser, ClipboardList, Brain, MapPin, Receipt, Play, KeyRound, Camera } from 'lucide-react';
+import { Settings, FileText, LogOut, User, HelpCircle, Menu, BarChart3, Package, ClipboardCheck, Building2, DollarSign, Users as UsersIcon, BookUser, Brain, MapPin, Receipt, KeyRound } from 'lucide-react';
 import type { User as UserType } from '../types';
 import type { CompanyBranding } from '../types';
 import DarkModeToggle from './DarkModeToggle';
@@ -102,38 +102,6 @@ export default function LayoutRouter({ children, user, companyBranding, onLogout
       roles: ['client']
     },
     {
-      id: 'extract',
-      label: 'Extract',
-      icon: FileText,
-      path: '/extract',
-      requiresPermission: false,
-      roles: ['admin', 'user']
-    },
-    {
-      id: 'transform',
-      label: 'Transform',
-      icon: RefreshCw,
-      path: '/transform',
-      requiresPermission: false,
-      roles: ['admin', 'user']
-    },
-    {
-      id: 'execute',
-      label: 'Execute',
-      icon: Play,
-      path: '/execute',
-      requiresPermission: false,
-      roles: ['admin', 'user']
-    },
-    {
-      id: 'types',
-      label: 'Type Setup',
-      icon: Database,
-      path: '/types',
-      requiresPermission: true,
-      roles: ['admin', 'user']
-    },
-    {
       id: 'vendor-setup',
       label: 'Vendor Setup',
       icon: Package,
@@ -155,14 +123,6 @@ export default function LayoutRouter({ children, user, companyBranding, onLogout
       icon: ClipboardCheck,
       path: '/checkin-setup',
       requiresPermission: true,
-      roles: ['admin', 'user']
-    },
-    {
-      id: 'imaging',
-      label: 'Imaging',
-      icon: Camera,
-      path: '/imaging',
-      requiresPermission: false,
       roles: ['admin', 'user']
     },
     {
@@ -201,30 +161,13 @@ export default function LayoutRouter({ children, user, companyBranding, onLogout
         return false;
       }
 
-      if (item.id === 'extract' && !hasFeature('extract')) return false;
-      if (item.id === 'transform' && !hasFeature('transform')) return false;
-      if (item.id === 'execute' && !hasFeature('execute')) return false;
       if (item.id === 'client-setup' && !hasFeature('clientSetup')) return false;
       if (item.id === 'vendor-setup' && !hasFeature('vendorSetup')) return false;
       if (item.id === 'checkin-setup' && !hasFeature('checkInSetup')) return false;
-      if (item.id === 'imaging' && !hasFeature('imaging')) return false;
 
       if (user.role === 'user' && !user.isAdmin) {
-        if (item.id === 'extract' && !user.permissions.extractPage) {
-          return false;
-        }
-        if (item.id === 'transform' && !user.permissions.transformPage) {
-          return false;
-        }
-        if (item.id === 'execute' && !user.permissions.executePage) {
-          return false;
-        }
-        if (item.id === 'types' && !user.permissions.extractionTypes && !user.permissions.transformationTypes && !user.permissions.executeSetup && !user.permissions.workflowManagement) {
-          return false;
-        }
         if (item.id === 'logs') {
-          const hasAnyLogsPermission = user.permissions.extractionLogs || user.permissions.workflowLogs ||
-            user.permissions.emailPolling || user.permissions.processedEmails ||
+          const hasAnyLogsPermission = user.permissions.emailPolling || user.permissions.processedEmails ||
             user.permissions.sftpPolling || user.permissions.checkinLogs;
           if (!hasAnyLogsPermission) return false;
         }
@@ -245,7 +188,7 @@ export default function LayoutRouter({ children, user, companyBranding, onLogout
       if (item.id === 'settings') {
         const hasAnyPermission = user.permissions.sftp || user.permissions.api ||
           user.permissions.emailMonitoring || user.permissions.emailRules ||
-          user.permissions.processedEmails || user.permissions.extractionLogs ||
+          user.permissions.processedEmails ||
           user.permissions.userManagement;
         if (!hasAnyPermission) {
           return false;
@@ -285,13 +228,9 @@ export default function LayoutRouter({ children, user, companyBranding, onLogout
 
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === '/extract') return 'Upload & Extract';
     if (path === '/vendor-setup') return 'Vendor Setup';
     if (path === '/checkin-setup') return 'Check-In Setup';
     if (path === '/client-setup') return 'Client Setup';
-    if (path === '/transform') return 'Transform & Rename';
-    if (path === '/execute') return 'Execute';
-    if (path === '/types') return 'Type Setup';
     if (path === '/settings') return 'Settings';
     if (path === '/logs') return 'Activity Logs';
     if (path === '/order-entry') return 'Order Entry';
@@ -301,20 +240,15 @@ export default function LayoutRouter({ children, user, companyBranding, onLogout
     if (path === '/track-trace') return 'Track & Trace';
     if (path === '/invoices') return 'Invoices';
     if (path === '/client-users') return 'User Management';
-    if (path === '/imaging') return 'Imaging';
-    return 'Parse-It';
+    return 'Portal';
   };
 
   const getPageDescription = () => {
     const path = location.pathname;
-    if (path === '/extract') return user.role === 'vendor' ? 'Upload your PDF documents for automated processing' : 'Upload PDFs and extract structured data';
     if (path === '/vendor-setup') return 'Manage vendor accounts and configure orders display settings';
     if (path === '/checkin-setup') return 'Configure driver check-in system and manage driver information';
     if (path === '/client-setup') return 'Manage client companies and their users';
-    if (path === '/transform') return 'Extract data from PDFs to intelligently rename files';
-    if (path === '/execute') return 'Run configured actions with custom parameters';
-    if (path === '/types') return 'Configure extraction types, transformation types, and workflows';
-    if (path === '/settings') return 'Configure Parse-It settings and preferences';
+    if (path === '/settings') return 'Configure portal settings and preferences';
     if (path === '/logs') return 'Monitor system activity and processing logs';
     if (path === '/order-entry') return 'Create and manage orders for your organization';
     if (path.startsWith('/order-entry/submissions')) return 'View and manage order submissions';
@@ -323,8 +257,7 @@ export default function LayoutRouter({ children, user, companyBranding, onLogout
     if (path === '/track-trace') return 'Track and monitor your shipments in real-time';
     if (path === '/invoices') return 'View and manage your invoices';
     if (path === '/client-users') return 'Manage users in your organization';
-    if (path === '/imaging') return 'Document imaging and scanning';
-    return 'PDF Data Extraction';
+    return 'Client & Vendor Portal';
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, FileText, LogOut, User, HelpCircle, Menu, X, BarChart3, RefreshCw, Database, Building, Package, ClipboardCheck, Building2, DollarSign, Users as UsersIcon, BookUser, ClipboardList, Brain, MapPin, Receipt, Play, Camera } from 'lucide-react';
+import { Settings, FileText, LogOut, User, HelpCircle, Menu, BarChart3, Package, ClipboardCheck, Building2, DollarSign, Users as UsersIcon, BookUser, Brain, MapPin, Receipt } from 'lucide-react';
 import type { User as UserType } from '../types';
 import type { CompanyBranding } from '../types';
 import DarkModeToggle from './DarkModeToggle';
@@ -9,8 +9,8 @@ import { useLicense } from '../hooks/useLicense';
 
 interface LayoutProps {
   children: React.ReactNode;
-  currentPage: 'extract' | 'vendor-setup' | 'checkin-setup' | 'client-setup' | 'transform' | 'execute' | 'types' | 'settings' | 'logs' | 'order-entry' | 'order-submissions' | 'order-submission-detail' | 'rate-quote' | 'client-users' | 'address-book' | 'track-trace' | 'invoices' | 'imaging';
-  onNavigate: (page: 'extract' | 'vendor-setup' | 'checkin-setup' | 'client-setup' | 'transform' | 'execute' | 'types' | 'settings' | 'logs' | 'order-entry' | 'order-submissions' | 'rate-quote' | 'client-users' | 'address-book' | 'track-trace' | 'invoices' | 'imaging') => void;
+  currentPage: 'vendor-setup' | 'checkin-setup' | 'client-setup' | 'settings' | 'logs' | 'order-entry' | 'order-submissions' | 'order-submission-detail' | 'rate-quote' | 'client-users' | 'address-book' | 'track-trace' | 'invoices';
+  onNavigate: (page: 'vendor-setup' | 'checkin-setup' | 'client-setup' | 'settings' | 'logs' | 'order-entry' | 'order-submissions' | 'rate-quote' | 'client-users' | 'address-book' | 'track-trace' | 'invoices') => void;
   user: UserType;
   companyBranding?: CompanyBranding;
   onLogout: () => void;
@@ -127,38 +127,6 @@ export default function Layout({ children, currentPage, onNavigate, user, compan
       roles: ['client']
     },
     {
-      id: 'extract',
-      label: 'Extract',
-      icon: FileText,
-      onClick: () => onNavigate('extract'),
-      requiresPermission: false,
-      roles: ['admin', 'user']
-    },
-    {
-      id: 'transform',
-      label: 'Transform',
-      icon: RefreshCw,
-      onClick: () => onNavigate('transform'),
-      requiresPermission: false,
-      roles: ['admin', 'user']
-    },
-    {
-      id: 'execute',
-      label: 'Execute',
-      icon: Play,
-      onClick: () => onNavigate('execute'),
-      requiresPermission: false,
-      roles: ['admin', 'user']
-    },
-    {
-      id: 'types',
-      label: 'Type Setup',
-      icon: Database,
-      onClick: () => onNavigate('types'),
-      requiresPermission: true,
-      roles: ['admin', 'user']
-    },
-    {
       id: 'vendor-setup',
       label: 'Vendor Setup',
       icon: Package,
@@ -180,14 +148,6 @@ export default function Layout({ children, currentPage, onNavigate, user, compan
       icon: ClipboardCheck,
       onClick: () => onNavigate('checkin-setup'),
       requiresPermission: true,
-      roles: ['admin', 'user']
-    },
-    {
-      id: 'imaging',
-      label: 'Imaging',
-      icon: Camera,
-      onClick: () => onNavigate('imaging'),
-      requiresPermission: false,
       roles: ['admin', 'user']
     },
     {
@@ -228,30 +188,13 @@ export default function Layout({ children, currentPage, onNavigate, user, compan
         return false;
       }
 
-      if (item.id === 'extract' && !hasFeature('extract')) return false;
-      if (item.id === 'transform' && !hasFeature('transform')) return false;
-      if (item.id === 'execute' && !hasFeature('execute')) return false;
       if (item.id === 'client-setup' && !hasFeature('clientSetup')) return false;
       if (item.id === 'vendor-setup' && !hasFeature('vendorSetup')) return false;
       if (item.id === 'checkin-setup' && !hasFeature('checkInSetup')) return false;
-      if (item.id === 'imaging' && !hasFeature('imaging')) return false;
 
       if (user.role === 'user' && !user.isAdmin) {
-        if (item.id === 'extract' && !user.permissions.extractPage) {
-          return false;
-        }
-        if (item.id === 'transform' && !user.permissions.transformPage) {
-          return false;
-        }
-        if (item.id === 'execute' && !user.permissions.executePage) {
-          return false;
-        }
-        if (item.id === 'types' && !user.permissions.extractionTypes && !user.permissions.transformationTypes && !user.permissions.executeSetup && !user.permissions.workflowManagement) {
-          return false;
-        }
         if (item.id === 'logs') {
-          const hasAnyLogsPermission = user.permissions.extractionLogs || user.permissions.workflowLogs ||
-            user.permissions.emailPolling || user.permissions.processedEmails ||
+          const hasAnyLogsPermission = user.permissions.emailPolling || user.permissions.processedEmails ||
             user.permissions.sftpPolling || user.permissions.checkinLogs;
           if (!hasAnyLogsPermission) return false;
         }
@@ -474,13 +417,9 @@ export default function Layout({ children, currentPage, onNavigate, user, compan
                 )}
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    {currentPage === 'extract' && 'Upload & Extract'}
                     {currentPage === 'vendor-setup' && 'Vendor Setup'}
                     {currentPage === 'checkin-setup' && 'Check-In Setup'}
                     {currentPage === 'client-setup' && 'Client Setup'}
-                    {currentPage === 'transform' && 'Transform & Rename'}
-                    {currentPage === 'execute' && 'Execute'}
-                    {currentPage === 'types' && 'Type Setup'}
                     {currentPage === 'settings' && 'Settings'}
                     {currentPage === 'logs' && 'Activity Logs'}
                     {currentPage === 'order-entry' && 'Order Entry'}
@@ -489,17 +428,12 @@ export default function Layout({ children, currentPage, onNavigate, user, compan
                     {currentPage === 'track-trace' && 'Track & Trace'}
                     {currentPage === 'invoices' && 'Invoices'}
                     {currentPage === 'client-users' && 'User Management'}
-                    {currentPage === 'imaging' && 'Imaging'}
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400 mt-1">
-                    {currentPage === 'extract' && (user.role === 'vendor' ? 'Upload your PDF documents for automated processing' : 'Upload PDFs and extract structured data')}
                     {currentPage === 'vendor-setup' && 'Manage vendor accounts and configure orders display settings'}
                     {currentPage === 'checkin-setup' && 'Configure driver check-in system and manage driver information'}
                     {currentPage === 'client-setup' && 'Manage client companies and their users'}
-                    {currentPage === 'transform' && 'Extract data from PDFs to intelligently rename files'}
-                    {currentPage === 'execute' && 'Run configured actions with custom parameters'}
-                    {currentPage === 'types' && 'Configure extraction types, transformation types, and workflows'}
-                    {currentPage === 'settings' && 'Configure Parse-It settings and preferences'}
+                    {currentPage === 'settings' && 'Configure portal settings and preferences'}
                     {currentPage === 'logs' && 'Monitor system activity and processing logs'}
                     {currentPage === 'order-entry' && 'Create and manage orders for your organization'}
                     {currentPage === 'rate-quote' && 'Request and manage pricing quotes'}
@@ -507,7 +441,6 @@ export default function Layout({ children, currentPage, onNavigate, user, compan
                     {currentPage === 'track-trace' && 'Track and monitor your shipments in real-time'}
                     {currentPage === 'invoices' && 'View and manage your invoices'}
                     {currentPage === 'client-users' && 'Manage users in your organization'}
-                    {currentPage === 'imaging' && 'Document imaging and scanning'}
                   </p>
                 </div>
               </div>
