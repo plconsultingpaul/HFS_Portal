@@ -396,7 +396,6 @@ export default function App() {
       )}
       {currentPage === 'logs' && (
         <LogsPage
-          users={users}
           emailPollingLogs={emailPollingLogs}
           sftpPollingLogs={sftpPollingLogs}
           processedEmails={processedEmails}

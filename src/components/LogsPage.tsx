@@ -1,13 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { Clock, Server, Mail, Truck, Trash2 } from 'lucide-react';
-import type { User, UserPermissions, EmailPollingLog, SftpPollingLog, ProcessedEmail } from '../types';
+import type { UserPermissions, EmailPollingLog, SftpPollingLog, ProcessedEmail } from '../types';
 import EmailPollingLogsSettings from './settings/EmailPollingLogsSettings';
 import ProcessedEmailsSettings from './settings/ProcessedEmailsSettings';
 import DriverCheckinLogsSettings from './settings/DriverCheckinLogsSettings';
 import PurgeLogsSettings from './settings/PurgeLogsSettings';
 
 interface LogsPageProps {
-  users: User[];
   emailPollingLogs: EmailPollingLog[];
   sftpPollingLogs: SftpPollingLog[];
   processedEmails: ProcessedEmail[];
@@ -21,7 +20,6 @@ interface LogsPageProps {
 type LogsTab = 'polling' | 'sftp' | 'processed' | 'checkin' | 'purge';
 
 export default function LogsPage({
-  users,
   emailPollingLogs,
   sftpPollingLogs,
   processedEmails,

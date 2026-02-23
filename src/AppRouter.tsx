@@ -427,7 +427,6 @@ function AppContent() {
           >
             <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
               <LogsPage
-                users={users}
                 emailPollingLogs={emailPollingLogs}
                 sftpPollingLogs={sftpPollingLogs}
                 processedEmails={processedEmails}
