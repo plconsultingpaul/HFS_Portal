@@ -2,7 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Save, Server, TestTube, Play, Folder, AlertCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { SftpPollingConfig, ExtractionType, TransformationType, ExtractionWorkflow, SftpPollingLog, ImagingBucket } from '../../types';
-import { fetchBuckets as fetchImagingBuckets } from '../../services/imagingService';
+
+async function fetchImagingBuckets(): Promise<ImagingBucket[]> {
+  const { data, error } = await supabase
+    .from('imaging_buckets')
+    .select('*')
+    .order('name');
+  if (error) throw error;
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    url: row.url,
+    description: row.description || '',
+    isActive: row.is_active,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }));
+}
 
 interface SftpPollingSettingsProps {
   extractionTypes: ExtractionType[];

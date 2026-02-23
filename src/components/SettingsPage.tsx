@@ -40,10 +40,6 @@ interface SettingsPageProps {
   updateUserTransformationTypes: (userId: string, transformationTypeIds: string[]) => Promise<{ success: boolean; message: string }>;
   getUserExecuteCategories: (userId: string) => Promise<string[]>;
   updateUserExecuteCategories: (userId: string, categoryIds: string[]) => Promise<{ success: boolean; message: string }>;
-  onUpdateExtractionTypes: (types: ExtractionType[]) => Promise<void>;
-  onDeleteExtractionType: (id: string) => Promise<void>;
-  onUpdateTransformationTypes: (types: TransformationType[]) => Promise<void>;
-  onDeleteTransformationType: (id: string) => Promise<void>;
   onUpdateSftpConfig: (config: SftpConfig) => Promise<void>;
   onUpdateSettingsConfig: (config: SettingsConfig) => Promise<void>;
   onUpdateApiConfig: (config: ApiConfig) => Promise<void>;
@@ -81,10 +77,6 @@ export default function SettingsPage({
   updateUserTransformationTypes,
   getUserExecuteCategories,
   updateUserExecuteCategories,
-  onUpdateExtractionTypes,
-  onDeleteExtractionType,
-  onUpdateTransformationTypes,
-  onDeleteTransformationType,
   onUpdateSftpConfig,
   onUpdateSettingsConfig,
   onUpdateApiConfig,

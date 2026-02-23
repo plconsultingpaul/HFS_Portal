@@ -484,10 +484,6 @@ function AppContent() {
                 updateUserTransformationTypes={updateUserTransformationTypes}
                 getUserExecuteCategories={getUserExecuteCategories}
                 updateUserExecuteCategories={updateUserExecuteCategories}
-                onUpdateExtractionTypes={handleUpdateExtractionTypes}
-                onDeleteExtractionType={handleDeleteExtractionType}
-                onUpdateTransformationTypes={handleUpdateTransformationTypes}
-                onDeleteTransformationType={handleDeleteTransformationType}
                 onUpdateSftpConfig={handleUpdateSftpConfig}
                 onUpdateSettingsConfig={handleUpdateSettingsConfig}
                 onUpdateApiConfig={handleUpdateApiConfig}

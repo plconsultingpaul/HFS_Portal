@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Save, Mail, Filter } from 'lucide-react';
 import type { EmailProcessingRule, ExtractionType, TransformationType, WorkflowV2 } from '../../types';
-import { fetchWorkflowsV2 } from '../../services/workflowV2Service';
+import { supabase } from '../../lib/supabase';
 
 interface EmailRulesSettingsProps {
   emailRules: EmailProcessingRule[];
@@ -10,11 +10,30 @@ interface EmailRulesSettingsProps {
   onUpdateEmailRules: (rules: EmailProcessingRule[]) => Promise<void>;
 }
 
-export default function EmailRulesSettings({ 
-  emailRules, 
-  extractionTypes, 
+async function fetchWorkflowsV2(): Promise<WorkflowV2[]> {
+  const { data, error } = await supabase
+    .from('workflows_v2')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  return (data || []).map(w => ({
+    id: w.id,
+    name: w.name,
+    description: w.description || '',
+    workflowType: w.workflow_type || 'extraction',
+    isActive: w.is_active,
+    createdAt: w.created_at,
+    updatedAt: w.updated_at,
+  }));
+}
+
+export default function EmailRulesSettings({
+  emailRules,
+  extractionTypes,
   transformationTypes,
-  onUpdateEmailRules 
+  onUpdateEmailRules
 }: EmailRulesSettingsProps) {
   const [localRules, setLocalRules] = useState<EmailProcessingRule[]>(emailRules);
   const [isSaving, setIsSaving] = useState(false);
