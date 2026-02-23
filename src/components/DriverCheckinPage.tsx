@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Upload, CheckCircle, X, ArrowRight, Loader2, AlertCircle, Delete } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { detectExtractionType } from '../lib/geminiDetector';
-import { executeWorkflow } from '../lib/workflow';
 import DocumentScanner from './DocumentScanner';
-import type { ExtractionType, DriverCheckinSettings } from '../types';
+import type { DriverCheckinSettings } from '../types';
 
 
 type CheckinStep = 'phone' | 'info' | 'confirm' | 'scan' | 'complete';
@@ -32,7 +30,6 @@ export default function DriverCheckinPage() {
   const [processing, setProcessing] = useState(false);
   const [settings, setSettings] = useState<DriverCheckinSettings | null>(null);
 
-  const [extractionTypes, setExtractionTypes] = useState<ExtractionType[]>([]);
   const [forceDarkMode, setForceDarkMode] = useState<boolean | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -40,7 +37,6 @@ export default function DriverCheckinPage() {
 
   useEffect(() => {
     loadSettings();
-    loadExtractionTypes();
   }, []);
 
   useEffect(() => {
@@ -91,44 +87,6 @@ export default function DriverCheckinPage() {
       }
     }
   }, [forceDarkMode]);
-
-  const loadExtractionTypes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('extraction_types')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-
-      if (data) {
-        const types: ExtractionType[] = data.map((type: any) => ({
-          id: type.id,
-          name: type.name,
-          defaultInstructions: type.default_instructions || '',
-          formatTemplate: type.format_template || '',
-          filename: type.filename || '',
-          formatType: type.format_type || 'JSON',
-          jsonPath: type.json_path,
-          fieldMappings: type.field_mappings,
-          parseitIdMapping: type.parseit_id_mapping,
-          traceTypeMapping: type.trace_type_mapping,
-          traceTypeValue: type.trace_type_value,
-          workflowId: type.workflow_id,
-          autoDetectInstructions: type.auto_detect_instructions,
-          csvDelimiter: type.csv_delimiter,
-          csvIncludeHeaders: type.csv_include_headers,
-          csvRowDetectionInstructions: type.csv_row_detection_instructions,
-          csvMultiPageProcessing: type.csv_multi_page_processing,
-          defaultUploadMode: type.default_upload_mode,
-          lockUploadMode: type.lock_upload_mode
-        }));
-        setExtractionTypes(types);
-      }
-    } catch (err) {
-      console.error('Error loading extraction types:', err);
-    }
-  };
 
   const formatPhoneNumber = (value: string): string => {
     const digits = value.replace(/\D/g, '');
@@ -351,63 +309,10 @@ export default function DriverCheckinPage() {
 
         if (docError) throw docError;
 
-        try {
-          let workflowId = settings?.fallbackWorkflowId;
-          let extractionTypeId = null;
-
-          if (extractionTypes.length > 0) {
-            const detectionResult = await detectExtractionType({
-              pdfFile: doc.file,
-              extractionTypes: extractionTypes
-            });
-
-            if (detectionResult.detectedTypeId && detectionResult.confidence === 'high') {
-              extractionTypeId = detectionResult.detectedTypeId;
-              const extractionType = extractionTypes.find(t => t.id === extractionTypeId);
-              if (extractionType?.workflowId) {
-                workflowId = extractionType.workflowId;
-              }
-            }
-          }
-
-          await supabase
-            .from('driver_checkin_documents')
-            .update({
-              extraction_type_id: extractionTypeId,
-              workflow_id: workflowId
-            })
-            .eq('id', docRecord.id);
-
-          if (workflowId) {
-            const pdfBase64 = await fileToBase64(doc.file);
-
-            await executeWorkflow({
-              extractedData: '',
-              workflowId: workflowId,
-              extractionTypeId: extractionTypeId || undefined,
-              pdfFilename: doc.file.name,
-              pdfPages: 1,
-              pdfBase64: pdfBase64,
-              originalPdfFilename: doc.file.name
-            });
-          }
-
-          await supabase
-            .from('driver_checkin_documents')
-            .update({ processing_status: 'completed' })
-            .eq('id', docRecord.id);
-
-        } catch (processError) {
-          console.error('Error processing document:', processError);
-
-          await supabase
-            .from('driver_checkin_documents')
-            .update({
-              processing_status: 'failed',
-              error_message: processError instanceof Error ? processError.message : 'Unknown error'
-            })
-            .eq('id', docRecord.id);
-        }
+        await supabase
+          .from('driver_checkin_documents')
+          .update({ processing_status: 'completed' })
+          .eq('id', docRecord.id);
       }
 
       await supabase
@@ -431,19 +336,6 @@ export default function DriverCheckinPage() {
     }
   };
 
-
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        const base64 = result.split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
 
   const startNewCheckin = () => {
     setStep('phone');
