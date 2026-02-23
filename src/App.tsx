@@ -2,11 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
 import LoginPage from './components/LoginPage';
 import Layout from './components/Layout';
-import ExtractPage from './components/ExtractPage';
-import TransformPage from './components/TransformPage';
 import SettingsPage from './components/SettingsPage';
 import LogsPage from './components/LogsPage';
-import TypeSetupPage from './components/TypeSetupPage';
 import VendorSetupPage from './components/VendorSetupPage';
 import CheckInSetupPage from './components/CheckInSetupPage';
 import ClientSetupPage from './components/ClientSetupPage';
@@ -16,12 +13,11 @@ import OrderEntrySubmissionDetailPage from './components/OrderEntrySubmissionDet
 import RateQuotePage from './components/RateQuotePage';
 import AddressBookPage from './components/AddressBookPage';
 import DriverCheckinPage from './components/DriverCheckinPage';
-import ImagingPage from './components/ImagingPage';
 import PermissionDeniedModal from './components/common/PermissionDeniedModal';
 import { useSupabaseData } from './hooks/useSupabaseData';
 import { LicenseProvider } from './contexts/LicenseContext';
 import { Loader2 } from 'lucide-react';
-import type { ExtractionType, TransformationType, SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule, User, SecuritySettings, CompanyBranding } from './types';
+import type { SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule, CompanyBranding } from './types';
 
 export default function App() {
   const [isDriverCheckin, setIsDriverCheckin] = useState(false);
@@ -61,7 +57,7 @@ export default function App() {
     getUserExecuteCategories,
     updateUserExecuteCategories
   } = useAuth();
-  const [currentPage, setCurrentPage] = useState<'extract' | 'vendor-setup' | 'checkin-setup' | 'client-setup' | 'transform' | 'types' | 'settings' | 'logs' | 'order-entry' | 'order-submissions' | 'order-submission-detail' | 'rate-quote' | 'client-users' | 'address-book' | 'imaging'>('extract');
+  const [currentPage, setCurrentPage] = useState<'vendor-setup' | 'checkin-setup' | 'client-setup' | 'settings' | 'logs' | 'order-entry' | 'order-submissions' | 'order-submission-detail' | 'rate-quote' | 'client-users' | 'address-book'>('client-setup');
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
   const {
     extractionTypes,
@@ -72,34 +68,24 @@ export default function App() {
     emailConfig,
     emailRules,
     processedEmails,
-    extractionLogs,
     users,
     workflows,
     workflowSteps,
     emailPollingLogs,
-    workflowExecutionLogs,
     sftpPollingLogs,
     loading,
     refreshData,
     companyBranding,
-    refreshLogs,
-    refreshLogsWithFilters,
     refreshProcessedEmails,
-    refreshWorkflowExecutionLogs,
     refreshSftpPollingLogs,
     updateSftpPollingConfigs,
-    updateExtractionTypes,
     updateSftpConfig,
     updateSettingsConfig,
     updateApiConfig,
     updateEmailConfig,
     updateEmailRules,
     refreshPollingLogs,
-    logExtraction,
     updateCompanyBranding,
-    deleteExtractionType,
-    updateTransformationTypes,
-    deleteTransformationType
   } = useSupabaseData();
 
   // Navigate to appropriate page when user logs in
@@ -115,8 +101,7 @@ export default function App() {
           setCurrentPage('client-users');
         }
       } else {
-        // All other users start on the extract page
-        setCurrentPage('extract');
+        setCurrentPage('client-setup');
       }
     }
   }, [isAuthenticated, user]);
@@ -149,19 +134,17 @@ export default function App() {
     );
   }
 
-  const handleNavigate = (page: 'extract' | 'vendor-setup' | 'checkin-setup' | 'client-setup' | 'transform' | 'types' | 'settings' | 'logs' | 'order-entry' | 'order-submissions' | 'rate-quote' | 'client-users' | 'imaging') => {
-    // Check for settings permission
+  const handleNavigate = (page: 'vendor-setup' | 'checkin-setup' | 'client-setup' | 'settings' | 'logs' | 'order-entry' | 'order-submissions' | 'rate-quote' | 'client-users' | 'address-book') => {
     if (page === 'settings') {
-      const nonTypePermissions = {
+      const settingsPermissions = {
         sftp: user.permissions.sftp,
         api: user.permissions.api,
         emailMonitoring: user.permissions.emailMonitoring,
         emailRules: user.permissions.emailRules,
         processedEmails: user.permissions.processedEmails,
-        extractionLogs: user.permissions.extractionLogs,
         userManagement: user.permissions.userManagement
       };
-      const hasAnyPermission = Object.values(nonTypePermissions).some(permission => permission === true);
+      const hasAnyPermission = Object.values(settingsPermissions).some(permission => permission === true);
 
       if (!hasAnyPermission) {
         setPermissionDenied({
@@ -251,8 +234,7 @@ export default function App() {
       }
     }
 
-    // Prevent vendors from accessing admin/user pages
-    if ((page === 'types' || page === 'logs' || page === 'settings' || page === 'transform' || page === 'vendor-setup' || page === 'checkin-setup' || page === 'client-setup') && user.role === 'vendor') {
+    if ((page === 'logs' || page === 'settings' || page === 'vendor-setup' || page === 'checkin-setup' || page === 'client-setup') && user.role === 'vendor') {
       setPermissionDenied({
         isOpen: true,
         message: 'You do not have permission to access this section. Your account is configured with vendor-only access.',
@@ -261,26 +243,16 @@ export default function App() {
       return;
     }
 
-    // Prevent client users from accessing admin/user pages
-    if ((page === 'extract' || page === 'types' || page === 'logs' || page === 'settings' || page === 'transform' || page === 'vendor-setup' || page === 'checkin-setup' || page === 'client-setup') && user.role === 'client') {
+    if ((page === 'logs' || page === 'settings' || page === 'vendor-setup' || page === 'checkin-setup' || page === 'client-setup') && user.role === 'client') {
       setPermissionDenied({
         isOpen: true,
-        message: 'You do not have permission to access this section. Your account is configured with vendor-only access.',
+        message: 'You do not have permission to access this section.',
         title: 'Access Denied'
       });
       return;
     }
 
     setCurrentPage(page);
-  };
-
-  const handleUpdateExtractionTypes = async (types: ExtractionType[]) => {
-    try {
-      await updateExtractionTypes(types);
-    } catch (error) {
-      console.error('Failed to update extraction types:', error);
-      alert('Failed to save extraction types. Please try again.');
-    }
   };
 
   const handleUpdateSftpConfig = async (config: SftpConfig) => {
@@ -330,33 +302,6 @@ export default function App() {
     }
   };
 
-  const handleDeleteExtractionType = async (id: string) => {
-    try {
-      await deleteExtractionType(id);
-    } catch (error) {
-      console.error('Failed to delete extraction type:', error);
-      alert('Failed to delete extraction type. Please try again.');
-    }
-  };
-
-  const handleUpdateTransformationTypes = async (types: TransformationType[]) => {
-    try {
-      await updateTransformationTypes(types);
-    } catch (error) {
-      console.error('Failed to update transformation types:', error);
-      alert('Failed to save transformation types. Please try again.');
-    }
-  };
-
-  const handleDeleteTransformationType = async (id: string) => {
-    try {
-      await deleteTransformationType(id);
-    } catch (error) {
-      console.error('Failed to delete transformation type:', error);
-      alert('Failed to delete transformation type. Please try again.');
-    }
-  };
-
   const handleUpdateCompanyBranding = async (branding: CompanyBranding) => {
     try {
       await updateCompanyBranding(branding);
@@ -381,17 +326,7 @@ export default function App() {
         companyBranding={companyBranding}
         onLogout={logout}
       >
-        {currentPage === 'extract' && (
-        <ExtractPage
-          extractionTypes={extractionTypes}
-          transformationTypes={transformationTypes}
-          sftpConfig={sftpConfig}
-          settingsConfig={settingsConfig}
-          apiConfig={apiConfig}
-          onNavigateToSettings={() => setCurrentPage('settings')}
-        />
-      )}
-      {currentPage === 'vendor-setup' && (
+        {currentPage === 'vendor-setup' && (
         <VendorSetupPage
           currentUser={user}
           apiConfig={apiConfig}
@@ -459,54 +394,17 @@ export default function App() {
           updateUserPassword={updateUserPassword}
         />
       )}
-      {currentPage === 'imaging' && (
-        <ImagingPage isAdmin={user.isAdmin} />
-      )}
-      {currentPage === 'transform' && (
-        <TransformPage
-          transformationTypes={transformationTypes}
-          sftpConfig={sftpConfig}
-          settingsConfig={settingsConfig}
-          apiConfig={apiConfig}
-          onNavigateToSettings={() => setCurrentPage('settings')}
-          getUserTransformationTypes={getUserTransformationTypes}
-        />
-      )}
       {currentPage === 'logs' && (
         <LogsPage
-          extractionLogs={extractionLogs}
-          extractionTypes={extractionTypes}
-          transformationTypes={transformationTypes}
           users={users}
           emailPollingLogs={emailPollingLogs}
-          workflowExecutionLogs={workflowExecutionLogs}
-          workflows={workflows}
-          workflowSteps={workflowSteps}
           sftpPollingLogs={sftpPollingLogs}
           processedEmails={processedEmails}
           isAdmin={user?.isAdmin}
           userPermissions={user?.permissions}
-          onRefreshLogs={refreshLogs}
-          onRefreshLogsWithFilters={refreshLogsWithFilters}
           onRefreshPollingLogs={refreshPollingLogs}
-          onRefreshWorkflowLogs={refreshWorkflowExecutionLogs}
           onRefreshSftpPollingLogs={refreshSftpPollingLogs}
           onRefreshProcessedEmails={refreshProcessedEmails}
-        />
-      )}
-      {currentPage === 'types' && (
-        <TypeSetupPage
-          extractionTypes={extractionTypes}
-          transformationTypes={transformationTypes}
-          workflows={workflows}
-          workflowSteps={workflowSteps}
-          apiConfig={apiConfig}
-          currentUser={user}
-          refreshData={refreshData}
-          onUpdateExtractionTypes={handleUpdateExtractionTypes}
-          onDeleteExtractionType={handleDeleteExtractionType}
-          onUpdateTransformationTypes={handleUpdateTransformationTypes}
-          onDeleteTransformationType={handleDeleteTransformationType}
         />
       )}
       {currentPage === 'settings' && (
@@ -534,10 +432,6 @@ export default function App() {
           updateUserTransformationTypes={updateUserTransformationTypes}
           getUserExecuteCategories={getUserExecuteCategories}
           updateUserExecuteCategories={updateUserExecuteCategories}
-          onUpdateExtractionTypes={handleUpdateExtractionTypes}
-          onDeleteExtractionType={handleDeleteExtractionType}
-          onUpdateTransformationTypes={handleUpdateTransformationTypes}
-          onDeleteTransformationType={handleDeleteTransformationType}
           onUpdateSftpConfig={handleUpdateSftpConfig}
           onUpdateSettingsConfig={handleUpdateSettingsConfig}
           onUpdateApiConfig={handleUpdateApiConfig}

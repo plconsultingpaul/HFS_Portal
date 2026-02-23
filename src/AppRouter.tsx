@@ -14,18 +14,13 @@ import ClientUsersPage from './components/ClientUsersPage';
 import DriverCheckinPage from './components/DriverCheckinPage';
 import PasswordSetupPage from './components/PasswordSetupPage';
 import PasswordResetPage from './components/PasswordResetPage';
-import PublicExecutePage from './components/PublicExecutePage';
 import LayoutRouter from './components/LayoutRouter';
 import PrivateRoute from './components/router/PrivateRoute';
 import RoleBasedRoute from './components/router/RoleBasedRoute';
 import NotFound from './components/router/NotFound';
 
-import ExtractPage from './components/ExtractPage';
-import TransformPage from './components/TransformPage';
-import ExecutePage from './components/ExecutePage';
 import SettingsPage from './components/SettingsPage';
 import LogsPage from './components/LogsPage';
-import TypeSetupPage from './components/TypeSetupPage';
 import VendorSetupPage from './components/VendorSetupPage';
 import CheckInSetupPage from './components/CheckInSetupPage';
 import ClientSetupPage from './components/ClientSetupPage';
@@ -38,9 +33,8 @@ import TrackTracePage from './components/TrackTracePage';
 import ShipmentDetailsPage from './components/ShipmentDetailsPage';
 import InvoicePage from './components/InvoicePage';
 import HelpPage from './components/HelpPage';
-import ImagingPage from './components/ImagingPage';
 
-import type { ExtractionType, TransformationType, SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule } from './types';
+import type { SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule } from './types';
 
 function AppContent() {
   const {
@@ -60,7 +54,7 @@ function AppContent() {
     getUserTransformationTypes,
     updateUserTransformationTypes,
     getUserExecuteCategories,
-    updateUserExecuteCategories
+    updateUserExecuteCategories,
   } = useAuth();
 
   const {
@@ -72,46 +66,27 @@ function AppContent() {
     emailConfig,
     emailRules,
     processedEmails,
-    extractionLogs,
     users,
     workflows,
     workflowSteps,
     emailPollingLogs,
-    workflowExecutionLogs,
     sftpPollingLogs,
     loading,
     refreshData,
     companyBranding,
-    refreshLogs,
-    refreshLogsWithFilters,
     refreshProcessedEmails,
-    refreshWorkflowExecutionLogs,
     refreshSftpPollingLogs,
     updateSftpPollingConfigs,
-    updateExtractionTypes,
     updateSftpConfig,
     updateSettingsConfig,
     updateApiConfig,
     updateEmailConfig,
     updateEmailRules,
     refreshPollingLogs,
-    logExtraction,
     updateCompanyBranding,
-    deleteExtractionType,
-    updateTransformationTypes,
-    deleteTransformationType
   } = useSupabaseData();
 
   const location = useLocation();
-
-  const handleUpdateExtractionTypes = async (types: ExtractionType[]) => {
-    try {
-      await updateExtractionTypes(types);
-    } catch (error) {
-      console.error('Failed to update extraction types:', error);
-      alert('Failed to save extraction types. Please try again.');
-    }
-  };
 
   const handleUpdateSftpConfig = async (config: SftpConfig) => {
     try {
@@ -160,33 +135,6 @@ function AppContent() {
     }
   };
 
-  const handleDeleteExtractionType = async (id: string) => {
-    try {
-      await deleteExtractionType(id);
-    } catch (error) {
-      console.error('Failed to delete extraction type:', error);
-      alert('Failed to delete extraction type. Please try again.');
-    }
-  };
-
-  const handleUpdateTransformationTypes = async (types: TransformationType[]) => {
-    try {
-      await updateTransformationTypes(types);
-    } catch (error) {
-      console.error('Failed to update transformation types:', error);
-      alert('Failed to save transformation types. Please try again.');
-    }
-  };
-
-  const handleDeleteTransformationType = async (id: string) => {
-    try {
-      await deleteTransformationType(id);
-    } catch (error) {
-      console.error('Failed to delete transformation type:', error);
-      alert('Failed to delete transformation type. Please try again.');
-    }
-  };
-
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -200,7 +148,7 @@ function AppContent() {
     );
   }
 
-  const publicPaths = ['/client/login', '/client', '/password-setup', '/reset-password', '/driver-checkin', '/checkin', '/help', '/execute'];
+  const publicPaths = ['/client/login', '/client', '/password-setup', '/reset-password', '/driver-checkin', '/checkin', '/help'];
   const isPublicPath = publicPaths.some(p => location.pathname === p || location.pathname.startsWith(p + '/'));
 
   if (!isAuthenticated || !user) {
@@ -216,7 +164,6 @@ function AppContent() {
           <Route path="/password-setup" element={<PasswordSetupPage />} />
           <Route path="/reset-password" element={<PasswordResetPage />} />
           <Route path="/help" element={<HelpPage />} />
-          <Route path="/execute/:slug" element={<PublicExecutePage />} />
           <Route path="/client/login" element={
             <ClientPortalLogin
               companyBranding={companyBranding}
@@ -244,8 +191,6 @@ function AppContent() {
       <Route path="/checkin" element={<DriverCheckinPage />} />
       <Route path="/password-setup" element={<PasswordSetupPage />} />
       <Route path="/reset-password" element={<PasswordResetPage />} />
-      <Route path="/execute/:slug" element={<PublicExecutePage />} />
-
       <Route path="/" element={
         <PrivateRoute isAuthenticated={isAuthenticated} user={user}>
           <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
@@ -260,91 +205,9 @@ function AppContent() {
                 <Navigate to="/order-entry" replace />
               )
             ) : (
-              <Navigate to="/extract" replace />
+              <Navigate to="/client-setup" replace />
             )}
           </LayoutRouter>
-        </PrivateRoute>
-      } />
-
-      <Route path="/extract" element={
-        <PrivateRoute isAuthenticated={isAuthenticated} user={user}>
-          <RoleBasedRoute
-            user={user}
-            customCheck={(u) => u.role === 'admin' || u.role === 'user'}
-            deniedMessage="You do not have permission to access the Extract page."
-          >
-            <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
-              <ExtractPage
-                extractionTypes={extractionTypes}
-                transformationTypes={transformationTypes}
-                sftpConfig={sftpConfig}
-                settingsConfig={settingsConfig}
-                apiConfig={apiConfig}
-                onNavigateToSettings={() => {}}
-              />
-            </LayoutRouter>
-          </RoleBasedRoute>
-        </PrivateRoute>
-      } />
-
-      <Route path="/transform" element={
-        <PrivateRoute isAuthenticated={isAuthenticated} user={user}>
-          <RoleBasedRoute
-            user={user}
-            customCheck={(u) => u.role === 'admin' || u.role === 'user'}
-            deniedMessage="You do not have permission to access the Transform page."
-          >
-            <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
-              <TransformPage
-                transformationTypes={transformationTypes}
-                sftpConfig={sftpConfig}
-                settingsConfig={settingsConfig}
-                apiConfig={apiConfig}
-                onNavigateToSettings={() => {}}
-                getUserTransformationTypes={getUserTransformationTypes}
-              />
-            </LayoutRouter>
-          </RoleBasedRoute>
-        </PrivateRoute>
-      } />
-
-      <Route path="/execute" element={
-        <PrivateRoute isAuthenticated={isAuthenticated} user={user}>
-          <RoleBasedRoute
-            user={user}
-            customCheck={(u) => u.role === 'admin' || u.role === 'user'}
-            deniedMessage="You do not have permission to access the Execute page."
-          >
-            <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
-              <ExecutePage user={user} />
-            </LayoutRouter>
-          </RoleBasedRoute>
-        </PrivateRoute>
-      } />
-
-      <Route path="/types" element={
-        <PrivateRoute isAuthenticated={isAuthenticated} user={user}>
-          <RoleBasedRoute
-            user={user}
-            customCheck={(u) => u.role === 'admin' || u.role === 'user'}
-            deniedMessage="You do not have permission to access the Type Setup page."
-          >
-            <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
-              <TypeSetupPage
-                extractionTypes={extractionTypes}
-                transformationTypes={transformationTypes}
-                workflows={workflows}
-                workflowSteps={workflowSteps}
-                apiConfig={apiConfig}
-                currentUser={user}
-                refreshData={refreshData}
-                onUpdateExtractionTypes={handleUpdateExtractionTypes}
-                onDeleteExtractionType={handleDeleteExtractionType}
-                onUpdateTransformationTypes={handleUpdateTransformationTypes}
-                onDeleteTransformationType={handleDeleteTransformationType}
-              />
-            </LayoutRouter>
-          </RoleBasedRoute>
         </PrivateRoute>
       } />
 
@@ -384,20 +247,6 @@ function AppContent() {
           >
             <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
               <CheckInSetupPage workflows={workflows} />
-            </LayoutRouter>
-          </RoleBasedRoute>
-        </PrivateRoute>
-      } />
-
-      <Route path="/imaging" element={
-        <PrivateRoute isAuthenticated={isAuthenticated} user={user}>
-          <RoleBasedRoute
-            user={user}
-            customCheck={(u) => u.role === 'admin' || u.role === 'user'}
-            deniedMessage="You do not have permission to access the Imaging page."
-          >
-            <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
-              <ImagingPage isAdmin={user?.isAdmin} />
             </LayoutRouter>
           </RoleBasedRoute>
         </PrivateRoute>
@@ -578,22 +427,13 @@ function AppContent() {
           >
             <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
               <LogsPage
-                extractionLogs={extractionLogs}
-                extractionTypes={extractionTypes}
-                transformationTypes={transformationTypes}
                 users={users}
                 emailPollingLogs={emailPollingLogs}
-                workflowExecutionLogs={workflowExecutionLogs}
-                workflows={workflows}
-                workflowSteps={workflowSteps}
                 sftpPollingLogs={sftpPollingLogs}
                 processedEmails={processedEmails}
                 isAdmin={user?.isAdmin}
                 userPermissions={user?.permissions}
-                onRefreshLogs={refreshLogs}
-                onRefreshLogsWithFilters={refreshLogsWithFilters}
                 onRefreshPollingLogs={refreshPollingLogs}
-                onRefreshWorkflowLogs={refreshWorkflowExecutionLogs}
                 onRefreshSftpPollingLogs={refreshSftpPollingLogs}
                 onRefreshProcessedEmails={refreshProcessedEmails}
               />
@@ -607,16 +447,15 @@ function AppContent() {
           <RoleBasedRoute
             user={user}
             customCheck={(u) => {
-              const nonTypePermissions = {
+              const settingsPermissions = {
                 sftp: u.permissions.sftp,
                 api: u.permissions.api,
                 emailMonitoring: u.permissions.emailMonitoring,
                 emailRules: u.permissions.emailRules,
                 processedEmails: u.permissions.processedEmails,
-                extractionLogs: u.permissions.extractionLogs,
                 userManagement: u.permissions.userManagement
               };
-              return Object.values(nonTypePermissions).some(permission => permission === true);
+              return Object.values(settingsPermissions).some(permission => permission === true);
             }}
             deniedTitle="Settings Access Denied"
             deniedMessage="You do not have permission to access the Settings page. This section requires administrative privileges to configure system settings, manage users, or adjust integrations."
