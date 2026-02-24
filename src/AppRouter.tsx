@@ -49,8 +49,6 @@ function AppContent() {
     deleteUser,
     updateUserPassword,
     changeOwnPassword,
-    getUserExecuteCategories,
-    updateUserExecuteCategories,
   } = useAuth();
 
   const {
@@ -461,8 +459,6 @@ function AppContent() {
                 updateUser={updateUser}
                 deleteUser={deleteUser}
                 updateUserPassword={updateUserPassword}
-                getUserExecuteCategories={getUserExecuteCategories}
-                updateUserExecuteCategories={updateUserExecuteCategories}
                 onUpdateSftpConfig={handleUpdateSftpConfig}
                 onUpdateSettingsConfig={handleUpdateSettingsConfig}
                 onUpdateApiConfig={handleUpdateApiConfig}

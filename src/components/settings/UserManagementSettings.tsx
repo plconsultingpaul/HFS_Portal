@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Plus, Trash2, Save, Users, Shield, User as UserIcon, Settings, FileText, Server, Key, Mail, Filter, Database, GitBranch, Brain, RefreshCw, Send, Clock, Play, Package, Building2, ClipboardCheck, BarChart3, Bell, Building, Truck, MapPin, ClipboardList, ScrollText, CheckCircle } from 'lucide-react';
-import type { User, ExtractionType, TransformationType } from '../../types';
+import { Plus, Trash2, Save, Users, Shield, User as UserIcon, Settings, FileText, Server, Key, Mail, Filter, Brain, Send, Clock, Package, Building2, ClipboardCheck, BarChart3, Bell, Building, Truck, MapPin, ClipboardList, ScrollText, CheckCircle } from 'lucide-react';
+import type { User } from '../../types';
 import Select from '../common/Select';
 import InvitationEmailTemplateEditor from './InvitationEmailTemplateEditor';
 import PasswordResetTemplateEditor from './PasswordResetTemplateEditor';
@@ -58,20 +58,12 @@ const formatInvitationSent = (sentAt: string | undefined, count: number | undefi
   return timeStr;
 };
 
-interface ExecuteCategory {
-  id: string;
-  name: string;
-  displayOrder: number;
-}
-
 interface UserManagementSettingsProps {
   currentUser: User;
   getAllUsers: () => Promise<User[]>;
   createUser: (username: string, password: string | undefined, isAdmin: boolean, role: 'admin' | 'user' | 'vendor', email?: string) => Promise<{ success: boolean; message: string }>;
   updateUser: (userId: string, updates: { isAdmin?: boolean; isActive?: boolean; permissions?: any }) => Promise<{ success: boolean; message: string }>;
   deleteUser: (userId: string) => Promise<{ success: boolean; message: string }>;
-  getUserExecuteCategories: (userId: string) => Promise<string[]>;
-  updateUserExecuteCategories: (userId: string, categoryIds: string[]) => Promise<{ success: boolean; message: string }>;
 }
 
 export default function UserManagementSettings({
@@ -79,9 +71,7 @@ export default function UserManagementSettings({
   getAllUsers,
   createUser,
   updateUser,
-  deleteUser,
-  getUserExecuteCategories,
-  updateUserExecuteCategories
+  deleteUser
 }: UserManagementSettingsProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,8 +83,8 @@ export default function UserManagementSettings({
   const [isSendingInvite, setIsSendingInvite] = useState(false);
   const [newUserPermissions, setNewUserPermissions] = useState<Record<string, boolean>>({});
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
-  const [activePermCategory, setActivePermCategory] = useState('pages');
-  const [newUserActivePermCategory, setNewUserActivePermCategory] = useState('pages');
+  const [activePermCategory, setActivePermCategory] = useState('vendorSetup');
+  const [newUserActivePermCategory, setNewUserActivePermCategory] = useState('vendorSetup');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState({
     username: '',
@@ -120,38 +110,12 @@ export default function UserManagementSettings({
   const [userForEmail, setUserForEmail] = useState<User | null>(null);
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');
-  const [selectedExtractionTypeIds, setSelectedExtractionTypeIds] = useState<string[]>([]);
-  const [selectedTransformationTypeIds, setSelectedTransformationTypeIds] = useState<string[]>([]);
   const [showEmailTemplateModal, setShowEmailTemplateModal] = useState(false);
   const [showForgotUsernameTemplateModal, setShowForgotUsernameTemplateModal] = useState(false);
   const [showResetPasswordTemplateModal, setShowResetPasswordTemplateModal] = useState(false);
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
-  const [selectedExecuteCategoryIds, setSelectedExecuteCategoryIds] = useState<string[]>([]);
-  const [executeCategories, setExecuteCategories] = useState<ExecuteCategory[]>([]);
-  const [extractionTypes, setExtractionTypes] = useState<ExtractionType[]>([]);
-  const [transformationTypes, setTransformationTypes] = useState<TransformationType[]>([]);
-  const [newUserExtractionTypeIds, setNewUserExtractionTypeIds] = useState<string[]>([]);
-  const [newUserTransformationTypeIds, setNewUserTransformationTypeIds] = useState<string[]>([]);
-  const [newUserExecuteCategoryIds, setNewUserExecuteCategoryIds] = useState<string[]>([]);
 
   const permissionCategories = [
-    {
-      id: 'pages', label: 'Pages', icon: FileText,
-      permissions: [
-        { key: 'extractPage', label: 'Extract Page', icon: FileText, description: 'Access the Extract page' },
-        { key: 'transformPage', label: 'Transform Page', icon: RefreshCw, description: 'Access the Transform page' },
-        { key: 'executePage', label: 'Execute Page', icon: Play, description: 'Access the Execute page' },
-      ]
-    },
-    {
-      id: 'typeSetup', label: 'Type Setup', icon: Database,
-      permissions: [
-        { key: 'extractionTypes', label: 'Extraction Types', icon: FileText, description: 'Manage extraction types' },
-        { key: 'transformationTypes', label: 'Transformation Types', icon: RefreshCw, description: 'Manage transformation types' },
-        { key: 'executeSetup', label: 'Execute Setup', icon: Play, description: 'Configure execute buttons' },
-        { key: 'workflowManagement', label: 'Workflows Setup', icon: GitBranch, description: 'Create and manage workflows' },
-      ]
-    },
     {
       id: 'vendorSetup', label: 'Vendor Setup', icon: Package,
       permissions: [
@@ -179,8 +143,6 @@ export default function UserManagementSettings({
     {
       id: 'logs', label: 'Logs', icon: BarChart3,
       permissions: [
-        { key: 'extractionLogs', label: 'Processing Logs', icon: FileText, description: 'View extraction and transformation logs' },
-        { key: 'workflowLogs', label: 'Workflow Logs', icon: GitBranch, description: 'View workflow execution logs' },
         { key: 'emailPolling', label: 'Email Polling', icon: Clock, description: 'View email monitoring activity' },
         { key: 'processedEmails', label: 'Processed Emails', icon: Mail, description: 'View processed email history' },
         { key: 'sftpPolling', label: 'SFTP Polling', icon: Server, description: 'View SFTP polling logs' },
@@ -204,60 +166,8 @@ export default function UserManagementSettings({
   const allPermissionOptions = permissionCategories.flatMap(cat => cat.permissions);
 
   useEffect(() => {
-    loadTypes();
     loadUsers();
   }, []);
-
-  const loadTypes = async () => {
-    try {
-      const [{ data: extData }, { data: transData }] = await Promise.all([
-        supabase.from('extraction_types').select('id, name').order('name'),
-        supabase.from('transformation_types').select('id, name').order('name'),
-      ]);
-      setExtractionTypes((extData || []).map(t => ({ id: t.id, name: t.name })) as ExtractionType[]);
-      setTransformationTypes((transData || []).map(t => ({ id: t.id, name: t.name })) as TransformationType[]);
-    } catch (err) {
-      console.error('Failed to load types:', err);
-    }
-  };
-
-  const getUserExtractionTypes = async (userId: string): Promise<string[]> => {
-    try {
-      const { data, error } = await supabase.from('user_extraction_types').select('extraction_type_id').eq('user_id', userId);
-      if (error) throw error;
-      return (data || []).map(item => item.extraction_type_id);
-    } catch { return []; }
-  };
-
-  const updateUserExtractionTypes = async (userId: string, extractionTypeIds: string[]): Promise<{ success: boolean; message: string }> => {
-    try {
-      await supabase.from('user_extraction_types').delete().eq('user_id', userId);
-      if (extractionTypeIds.length > 0) {
-        const { error } = await supabase.from('user_extraction_types').insert(extractionTypeIds.map(typeId => ({ user_id: userId, extraction_type_id: typeId })));
-        if (error) throw error;
-      }
-      return { success: true, message: 'Extraction type permissions updated successfully' };
-    } catch { return { success: false, message: 'Failed to update extraction type permissions' }; }
-  };
-
-  const getUserTransformationTypes = async (userId: string): Promise<string[]> => {
-    try {
-      const { data, error } = await supabase.from('user_transformation_types').select('transformation_type_id').eq('user_id', userId);
-      if (error) throw error;
-      return (data || []).map(item => item.transformation_type_id);
-    } catch { return []; }
-  };
-
-  const updateUserTransformationTypes = async (userId: string, transformationTypeIds: string[]): Promise<{ success: boolean; message: string }> => {
-    try {
-      await supabase.from('user_transformation_types').delete().eq('user_id', userId);
-      if (transformationTypeIds.length > 0) {
-        const { error } = await supabase.from('user_transformation_types').insert(transformationTypeIds.map(typeId => ({ user_id: userId, transformation_type_id: typeId })));
-        if (error) throw error;
-      }
-      return { success: true, message: 'Transformation type permissions updated successfully' };
-    } catch { return { success: false, message: 'Failed to update transformation type permissions' }; }
-  };
 
   const loadUsers = async () => {
     setLoading(true);
@@ -297,19 +207,6 @@ export default function UserManagementSettings({
             defaultPerms[opt.key] = newUser.isAdmin;
           });
           setNewUserPermissions(defaultPerms);
-          setNewUserExtractionTypeIds(newUser.isAdmin ? extractionTypes.map(t => t.id) : []);
-          setNewUserTransformationTypeIds(newUser.isAdmin ? transformationTypes.map(t => t.id) : []);
-          try {
-            const { data: categoriesData } = await supabase
-              .from('execute_button_categories')
-              .select('*')
-              .order('display_order', { ascending: true });
-            const cats = (categoriesData || []).map(c => ({
-              id: c.id, name: c.name, displayOrder: c.display_order
-            }));
-            setExecuteCategories(cats);
-            setNewUserExecuteCategoryIds(newUser.isAdmin ? cats.map(c => c.id) : []);
-          } catch { setExecuteCategories([]); setNewUserExecuteCategoryIds([]); }
           setCreateStep(2);
           setError('');
         } else {
@@ -343,15 +240,6 @@ export default function UserManagementSettings({
     try {
       const result = await updateUser(createdUserId, { permissions: newUserPermissions });
       if (result.success) {
-        if (newUserPermissions.extractPage) {
-          await updateUserExtractionTypes(createdUserId, newUserExtractionTypeIds);
-        }
-        if (newUserPermissions.transformPage) {
-          await updateUserTransformationTypes(createdUserId, newUserTransformationTypeIds);
-        }
-        if (newUserPermissions.executePage) {
-          await updateUserExecuteCategories(createdUserId, newUserExecuteCategoryIds);
-        }
         setCreateStep(3);
         setError('');
       } else {
@@ -395,9 +283,6 @@ export default function UserManagementSettings({
       setCreatedUsername('');
       setCreatedUserEmail('');
       setNewUserPermissions({});
-      setNewUserExtractionTypeIds([]);
-      setNewUserTransformationTypeIds([]);
-      setNewUserExecuteCategoryIds([]);
       setNewUser({ username: '', email: '', isAdmin: false, role: 'user' });
       await loadUsers();
       setTimeout(() => setSuccess(''), 5000);
@@ -412,9 +297,6 @@ export default function UserManagementSettings({
     setCreatedUsername('');
     setCreatedUserEmail('');
     setNewUserPermissions({});
-    setNewUserExtractionTypeIds([]);
-    setNewUserTransformationTypeIds([]);
-    setNewUserExecuteCategoryIds([]);
     setNewUser({ username: '', email: '', isAdmin: false, role: 'user' });
     await loadUsers();
     setTimeout(() => setSuccess(''), 3000);
@@ -537,33 +419,8 @@ export default function UserManagementSettings({
 
   const handleManagePermissions = async (user: User) => {
     setSelectedUser(user);
-    setActivePermCategory('pages');
+    setActivePermCategory('vendorSetup');
     setShowPermissionsModal(true);
-
-    try {
-      const extTypes = await getUserExtractionTypes(user.id);
-      setSelectedExtractionTypeIds(extTypes);
-    } catch { setSelectedExtractionTypeIds([]); }
-
-    try {
-      const transTypes = await getUserTransformationTypes(user.id);
-      setSelectedTransformationTypeIds(transTypes);
-    } catch { setSelectedTransformationTypeIds([]); }
-
-    try {
-      const { data: categoriesData } = await supabase
-        .from('execute_button_categories')
-        .select('*')
-        .order('display_order', { ascending: true });
-      setExecuteCategories((categoriesData || []).map(c => ({
-        id: c.id, name: c.name, displayOrder: c.display_order
-      })));
-    } catch { setExecuteCategories([]); }
-
-    try {
-      const catIds = await getUserExecuteCategories(user.id);
-      setSelectedExecuteCategoryIds(catIds);
-    } catch { setSelectedExecuteCategoryIds([]); }
   };
 
   const handleUpdatePermissions = async () => {
@@ -587,22 +444,9 @@ export default function UserManagementSettings({
         return;
       }
 
-      if (selectedUser.permissions.extractPage) {
-        await updateUserExtractionTypes(selectedUser.id, selectedExtractionTypeIds);
-      }
-      if (selectedUser.permissions.transformPage) {
-        await updateUserTransformationTypes(selectedUser.id, selectedTransformationTypeIds);
-      }
-      if (selectedUser.permissions.executePage) {
-        await updateUserExecuteCategories(selectedUser.id, selectedExecuteCategoryIds);
-      }
-
       setSuccess('Permissions updated successfully');
       setShowPermissionsModal(false);
       setSelectedUser(null);
-      setSelectedExtractionTypeIds([]);
-      setSelectedTransformationTypeIds([]);
-      setSelectedExecuteCategoryIds([]);
       await loadUsers();
       setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
@@ -722,54 +566,6 @@ export default function UserManagementSettings({
     }
   };
 
-
-  const toggleExtractionType = (extractionTypeId: string) => {
-    setSelectedExtractionTypeIds(prev => {
-      if (prev.includes(extractionTypeId)) {
-        return prev.filter(id => id !== extractionTypeId);
-      } else {
-        return [...prev, extractionTypeId];
-      }
-    });
-  };
-
-
-  const toggleTransformationType = (transformationTypeId: string) => {
-    setSelectedTransformationTypeIds(prev => {
-      if (prev.includes(transformationTypeId)) {
-        return prev.filter(id => id !== transformationTypeId);
-      } else {
-        return [...prev, transformationTypeId];
-      }
-    });
-  };
-
-  const selectAllTransformationTypes = () => {
-    setSelectedTransformationTypeIds(transformationTypes.map(type => type.id));
-  };
-
-  const deselectAllTransformationTypes = () => {
-    setSelectedTransformationTypeIds([]);
-  };
-
-
-  const toggleExecuteCategory = (categoryId: string) => {
-    setSelectedExecuteCategoryIds(prev => {
-      if (prev.includes(categoryId)) {
-        return prev.filter(id => id !== categoryId);
-      } else {
-        return [...prev, categoryId];
-      }
-    });
-  };
-
-  const selectAllExecuteCategories = () => {
-    setSelectedExecuteCategoryIds(executeCategories.map(cat => cat.id));
-  };
-
-  const deselectAllExecuteCategories = () => {
-    setSelectedExecuteCategoryIds([]);
-  };
 
   const togglePermission = (permissionKey: string) => {
     if (!selectedUser) return;
@@ -1211,7 +1007,6 @@ export default function UserManagementSettings({
                       {cat.permissions.map((option) => {
                         const Icon = option.icon;
                         const isEnabled = selectedUser.permissions[option.key as keyof typeof selectedUser.permissions];
-                        const hasTypeSelector = cat.id === 'pages' && ['extractPage', 'transformPage', 'executePage'].includes(option.key);
                         return (
                           <div key={option.key} className="space-y-0">
                             <div
@@ -1219,7 +1014,7 @@ export default function UserManagementSettings({
                                 isEnabled
                                   ? 'border-blue-300 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20'
                                   : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500'
-                              } ${isEnabled && hasTypeSelector ? 'rounded-b-none' : ''}`}
+                              }`}
                               onClick={() => togglePermission(option.key)}
                             >
                               <div className="flex items-center justify-between">
@@ -1243,105 +1038,6 @@ export default function UserManagementSettings({
                                 </div>
                               </div>
                             </div>
-
-                            {isEnabled && option.key === 'extractPage' && (
-                              <div className="border-2 border-t-0 border-blue-300 dark:border-blue-600 rounded-b-lg bg-blue-50/50 dark:bg-blue-900/10 p-3">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Extraction Types</span>
-                                  <div className="flex space-x-1.5">
-                                    <button onClick={(e) => { e.stopPropagation(); setSelectedExtractionTypeIds(extractionTypes.map(t => t.id)); }} className="text-xs px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">All</button>
-                                    <button onClick={(e) => { e.stopPropagation(); setSelectedExtractionTypeIds([]); }} className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">None</button>
-                                  </div>
-                                </div>
-                                {extractionTypes.length === 0 ? (
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">No extraction types available</p>
-                                ) : (
-                                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                                    {extractionTypes.map(type => {
-                                      const isSel = selectedExtractionTypeIds.includes(type.id);
-                                      return (
-                                        <div key={type.id} onClick={(e) => { e.stopPropagation(); toggleExtractionType(type.id); }} className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${isSel ? 'bg-green-100 dark:bg-green-900/30' : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
-                                          <div className="flex items-center space-x-2">
-                                            <FileText className={`h-3.5 w-3.5 ${isSel ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`} />
-                                            <span className={`text-sm ${isSel ? 'text-green-800 dark:text-green-200 font-medium' : 'text-gray-700 dark:text-gray-300'}`}>{type.name}</span>
-                                          </div>
-                                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${isSel ? 'border-green-500 bg-green-500' : 'border-gray-300 dark:border-gray-500'}`}>
-                                            {isSel && <div className="w-1.5 h-1.5 bg-white rounded-sm" />}
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{selectedExtractionTypeIds.length} of {extractionTypes.length} selected</p>
-                              </div>
-                            )}
-
-                            {isEnabled && option.key === 'transformPage' && (
-                              <div className="border-2 border-t-0 border-blue-300 dark:border-blue-600 rounded-b-lg bg-blue-50/50 dark:bg-blue-900/10 p-3">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Transformation Types</span>
-                                  <div className="flex space-x-1.5">
-                                    <button onClick={(e) => { e.stopPropagation(); selectAllTransformationTypes(); }} className="text-xs px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors">All</button>
-                                    <button onClick={(e) => { e.stopPropagation(); deselectAllTransformationTypes(); }} className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">None</button>
-                                  </div>
-                                </div>
-                                {transformationTypes.length === 0 ? (
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">No transformation types available</p>
-                                ) : (
-                                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                                    {transformationTypes.map(type => {
-                                      const isSel = selectedTransformationTypeIds.includes(type.id);
-                                      return (
-                                        <div key={type.id} onClick={(e) => { e.stopPropagation(); toggleTransformationType(type.id); }} className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${isSel ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
-                                          <div className="flex items-center space-x-2">
-                                            <RefreshCw className={`h-3.5 w-3.5 ${isSel ? 'text-orange-600 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`} />
-                                            <span className={`text-sm ${isSel ? 'text-orange-800 dark:text-orange-200 font-medium' : 'text-gray-700 dark:text-gray-300'}`}>{type.name}</span>
-                                          </div>
-                                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${isSel ? 'border-orange-500 bg-orange-500' : 'border-gray-300 dark:border-gray-500'}`}>
-                                            {isSel && <div className="w-1.5 h-1.5 bg-white rounded-sm" />}
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{selectedTransformationTypeIds.length} of {transformationTypes.length} selected</p>
-                              </div>
-                            )}
-
-                            {isEnabled && option.key === 'executePage' && (
-                              <div className="border-2 border-t-0 border-blue-300 dark:border-blue-600 rounded-b-lg bg-blue-50/50 dark:bg-blue-900/10 p-3">
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Execute Categories</span>
-                                  <div className="flex space-x-1.5">
-                                    <button onClick={(e) => { e.stopPropagation(); selectAllExecuteCategories(); }} className="text-xs px-2 py-0.5 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 rounded hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors">All</button>
-                                    <button onClick={(e) => { e.stopPropagation(); deselectAllExecuteCategories(); }} className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">None</button>
-                                  </div>
-                                </div>
-                                {executeCategories.length === 0 ? (
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 italic">No execute categories available</p>
-                                ) : (
-                                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                                    {executeCategories.map(cat => {
-                                      const isSel = selectedExecuteCategoryIds.includes(cat.id);
-                                      return (
-                                        <div key={cat.id} onClick={(e) => { e.stopPropagation(); toggleExecuteCategory(cat.id); }} className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${isSel ? 'bg-cyan-100 dark:bg-cyan-900/30' : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
-                                          <div className="flex items-center space-x-2">
-                                            <Play className={`h-3.5 w-3.5 ${isSel ? 'text-cyan-600 dark:text-cyan-400' : 'text-gray-400 dark:text-gray-500'}`} />
-                                            <span className={`text-sm ${isSel ? 'text-cyan-800 dark:text-cyan-200 font-medium' : 'text-gray-700 dark:text-gray-300'}`}>{cat.name}</span>
-                                          </div>
-                                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${isSel ? 'border-cyan-500 bg-cyan-500' : 'border-gray-300 dark:border-gray-500'}`}>
-                                            {isSel && <div className="w-1.5 h-1.5 bg-white rounded-sm" />}
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{selectedExecuteCategoryIds.length} of {executeCategories.length} selected</p>
-                              </div>
-                            )}
                           </div>
                         );
                       })}
@@ -1370,10 +1066,7 @@ export default function UserManagementSettings({
                 onClick={() => {
                   setShowPermissionsModal(false);
                   setSelectedUser(null);
-                  setActivePermCategory('pages');
-                  setSelectedExtractionTypeIds([]);
-                  setSelectedTransformationTypeIds([]);
-                  setSelectedExecuteCategoryIds([]);
+                  setActivePermCategory('vendorSetup');
                   setError('');
                 }}
                 className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg transition-colors duration-200"
@@ -1598,7 +1291,6 @@ export default function UserManagementSettings({
                           {cat.permissions.map((option) => {
                             const Icon = option.icon;
                             const isEnabled = newUserPermissions[option.key] || false;
-                            const hasTypeSelector = cat.id === 'pages' && ['extractPage', 'transformPage', 'executePage'].includes(option.key);
                             return (
                               <div key={option.key} className="space-y-0">
                                 <div
@@ -1606,7 +1298,7 @@ export default function UserManagementSettings({
                                     isEnabled
                                       ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20'
                                       : 'border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-500'
-                                  } ${isEnabled && hasTypeSelector ? 'rounded-b-none' : ''}`}
+                                  }`}
                                   onClick={() => toggleNewUserPermission(option.key)}
                                 >
                                   <div className="flex items-center justify-between">
@@ -1630,105 +1322,6 @@ export default function UserManagementSettings({
                                     </div>
                                   </div>
                                 </div>
-
-                                {isEnabled && option.key === 'extractPage' && (
-                                  <div className="border-2 border-t-0 border-green-300 dark:border-green-600 rounded-b-lg bg-green-50/50 dark:bg-green-900/10 p-3">
-                                    <div className="flex items-center justify-between mb-2">
-                                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Extraction Types</span>
-                                      <div className="flex space-x-1.5">
-                                        <button onClick={(e) => { e.stopPropagation(); setNewUserExtractionTypeIds(extractionTypes.map(t => t.id)); }} className="text-xs px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">All</button>
-                                        <button onClick={(e) => { e.stopPropagation(); setNewUserExtractionTypeIds([]); }} className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">None</button>
-                                      </div>
-                                    </div>
-                                    {extractionTypes.length === 0 ? (
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">No extraction types available</p>
-                                    ) : (
-                                      <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                                        {extractionTypes.map(type => {
-                                          const isSel = newUserExtractionTypeIds.includes(type.id);
-                                          return (
-                                            <div key={type.id} onClick={(e) => { e.stopPropagation(); setNewUserExtractionTypeIds(prev => prev.includes(type.id) ? prev.filter(id => id !== type.id) : [...prev, type.id]); }} className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${isSel ? 'bg-green-100 dark:bg-green-900/30' : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
-                                              <div className="flex items-center space-x-2">
-                                                <FileText className={`h-3.5 w-3.5 ${isSel ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`} />
-                                                <span className={`text-sm ${isSel ? 'text-green-800 dark:text-green-200 font-medium' : 'text-gray-700 dark:text-gray-300'}`}>{type.name}</span>
-                                              </div>
-                                              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${isSel ? 'border-green-500 bg-green-500' : 'border-gray-300 dark:border-gray-500'}`}>
-                                                {isSel && <div className="w-1.5 h-1.5 bg-white rounded-sm" />}
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{newUserExtractionTypeIds.length} of {extractionTypes.length} selected</p>
-                                  </div>
-                                )}
-
-                                {isEnabled && option.key === 'transformPage' && (
-                                  <div className="border-2 border-t-0 border-green-300 dark:border-green-600 rounded-b-lg bg-green-50/50 dark:bg-green-900/10 p-3">
-                                    <div className="flex items-center justify-between mb-2">
-                                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Transformation Types</span>
-                                      <div className="flex space-x-1.5">
-                                        <button onClick={(e) => { e.stopPropagation(); setNewUserTransformationTypeIds(transformationTypes.map(t => t.id)); }} className="text-xs px-2 py-0.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors">All</button>
-                                        <button onClick={(e) => { e.stopPropagation(); setNewUserTransformationTypeIds([]); }} className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">None</button>
-                                      </div>
-                                    </div>
-                                    {transformationTypes.length === 0 ? (
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">No transformation types available</p>
-                                    ) : (
-                                      <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                                        {transformationTypes.map(type => {
-                                          const isSel = newUserTransformationTypeIds.includes(type.id);
-                                          return (
-                                            <div key={type.id} onClick={(e) => { e.stopPropagation(); setNewUserTransformationTypeIds(prev => prev.includes(type.id) ? prev.filter(id => id !== type.id) : [...prev, type.id]); }} className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${isSel ? 'bg-orange-100 dark:bg-orange-900/30' : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
-                                              <div className="flex items-center space-x-2">
-                                                <RefreshCw className={`h-3.5 w-3.5 ${isSel ? 'text-orange-600 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`} />
-                                                <span className={`text-sm ${isSel ? 'text-orange-800 dark:text-orange-200 font-medium' : 'text-gray-700 dark:text-gray-300'}`}>{type.name}</span>
-                                              </div>
-                                              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${isSel ? 'border-orange-500 bg-orange-500' : 'border-gray-300 dark:border-gray-500'}`}>
-                                                {isSel && <div className="w-1.5 h-1.5 bg-white rounded-sm" />}
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{newUserTransformationTypeIds.length} of {transformationTypes.length} selected</p>
-                                  </div>
-                                )}
-
-                                {isEnabled && option.key === 'executePage' && (
-                                  <div className="border-2 border-t-0 border-green-300 dark:border-green-600 rounded-b-lg bg-green-50/50 dark:bg-green-900/10 p-3">
-                                    <div className="flex items-center justify-between mb-2">
-                                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Execute Categories</span>
-                                      <div className="flex space-x-1.5">
-                                        <button onClick={(e) => { e.stopPropagation(); setNewUserExecuteCategoryIds(executeCategories.map(c => c.id)); }} className="text-xs px-2 py-0.5 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 rounded hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors">All</button>
-                                        <button onClick={(e) => { e.stopPropagation(); setNewUserExecuteCategoryIds([]); }} className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">None</button>
-                                      </div>
-                                    </div>
-                                    {executeCategories.length === 0 ? (
-                                      <p className="text-xs text-gray-500 dark:text-gray-400 italic">No execute categories available</p>
-                                    ) : (
-                                      <div className="space-y-1.5 max-h-40 overflow-y-auto">
-                                        {executeCategories.map(cat => {
-                                          const isSel = newUserExecuteCategoryIds.includes(cat.id);
-                                          return (
-                                            <div key={cat.id} onClick={(e) => { e.stopPropagation(); setNewUserExecuteCategoryIds(prev => prev.includes(cat.id) ? prev.filter(id => id !== cat.id) : [...prev, cat.id]); }} className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${isSel ? 'bg-cyan-100 dark:bg-cyan-900/30' : 'bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
-                                              <div className="flex items-center space-x-2">
-                                                <Play className={`h-3.5 w-3.5 ${isSel ? 'text-cyan-600 dark:text-cyan-400' : 'text-gray-400 dark:text-gray-500'}`} />
-                                                <span className={`text-sm ${isSel ? 'text-cyan-800 dark:text-cyan-200 font-medium' : 'text-gray-700 dark:text-gray-300'}`}>{cat.name}</span>
-                                              </div>
-                                              <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${isSel ? 'border-cyan-500 bg-cyan-500' : 'border-gray-300 dark:border-gray-500'}`}>
-                                                {isSel && <div className="w-1.5 h-1.5 bg-white rounded-sm" />}
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">{newUserExecuteCategoryIds.length} of {executeCategories.length} selected</p>
-                                  </div>
-                                )}
                               </div>
                             );
                           })}
@@ -1772,9 +1365,6 @@ export default function UserManagementSettings({
                       setCreatedUsername('');
                       setCreatedUserEmail('');
                       setNewUserPermissions({});
-                      setNewUserExtractionTypeIds([]);
-                      setNewUserTransformationTypeIds([]);
-                      setNewUserExecuteCategoryIds([]);
                       setCreateStep(1);
                       setError('');
                     }}
@@ -1803,9 +1393,6 @@ export default function UserManagementSettings({
                       setCreatedUsername('');
                       setCreatedUserEmail('');
                       setNewUserPermissions({});
-                      setNewUserExtractionTypeIds([]);
-                      setNewUserTransformationTypeIds([]);
-                      setNewUserExecuteCategoryIds([]);
                       setNewUser({ username: '', email: '', isAdmin: false, role: 'user' });
                       setError('');
                       await loadUsers();

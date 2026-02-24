@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Server, Key, Mail, Filter, Database, Settings as SettingsIcon, Users, GitBranch, RefreshCw, Shield, Bell } from 'lucide-react';
+import { FileText, Server, Key, Mail, Filter, Settings as SettingsIcon, Users, Shield, Bell } from 'lucide-react';
 import type { SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule, ProcessedEmail, User } from '../types';
 import type { CompanyBranding } from '../types';
 
@@ -29,8 +29,6 @@ interface SettingsPageProps {
   updateUser: (userId: string, updates: { isAdmin?: boolean; isActive?: boolean }) => Promise<{ success: boolean; message: string }>;
   deleteUser: (userId: string) => Promise<{ success: boolean; message: string }>;
   updateUserPassword: (userId: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
-  getUserExecuteCategories: (userId: string) => Promise<string[]>;
-  updateUserExecuteCategories: (userId: string, categoryIds: string[]) => Promise<{ success: boolean; message: string }>;
   onUpdateSftpConfig: (config: SftpConfig) => Promise<void>;
   onUpdateSettingsConfig: (config: SettingsConfig) => Promise<void>;
   onUpdateApiConfig: (config: ApiConfig) => Promise<void>;
@@ -58,8 +56,6 @@ export default function SettingsPage({
   updateUser,
   deleteUser,
   updateUserPassword,
-  getUserExecuteCategories,
-  updateUserExecuteCategories,
   onUpdateSftpConfig,
   onUpdateSettingsConfig,
   onUpdateApiConfig,
@@ -122,8 +118,6 @@ export default function SettingsPage({
             createUser={createUser}
             updateUser={updateUser}
             deleteUser={deleteUser}
-            getUserExecuteCategories={getUserExecuteCategories}
-            updateUserExecuteCategories={updateUserExecuteCategories}
           />
         ) : <PermissionDenied />;
       case 'branding':

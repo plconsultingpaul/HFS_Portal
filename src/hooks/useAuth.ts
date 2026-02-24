@@ -27,28 +27,26 @@ const IDLE_TIMEOUT_MS = 60 * 60 * 1000;
 function getDefaultPermissions(isAdmin: boolean): UserPermissions {
   if (isAdmin) {
     return {
-      extractPage: true, extractionTypes: true, transformPage: true, transformationTypes: true,
-      executePage: true, executeSetup: true, sftp: true, api: true,
+      sftp: true, api: true,
       emailMonitoring: true, emailRules: true, processedEmails: true,
-      extractionLogs: true, userManagement: true, workflowManagement: true,
+      userManagement: true,
       vendorSetup: true, clientSetup: true, checkinSetup: true,
       ordersConfiguration: true, clientManagement: true, clientUserManagement: true,
       orderEntry: true, submissions: true, trackTrace: true,
       driverCheckin: true, driverManagement: true,
-      workflowLogs: true, emailPolling: true, sftpPolling: true, checkinLogs: true,
+      emailPolling: true, sftpPolling: true, checkinLogs: true,
       notificationTemplates: true, companyBranding: true
     };
   }
   return {
-    extractPage: false, extractionTypes: false, transformPage: false, transformationTypes: false,
-    executePage: false, executeSetup: false, sftp: false, api: false,
+    sftp: false, api: false,
     emailMonitoring: false, emailRules: false, processedEmails: false,
-    extractionLogs: false, userManagement: false, workflowManagement: false,
+    userManagement: false,
     vendorSetup: false, clientSetup: false, checkinSetup: false,
     ordersConfiguration: false, clientManagement: false, clientUserManagement: false,
     orderEntry: false, submissions: false, trackTrace: false,
     driverCheckin: false, driverManagement: false,
-    workflowLogs: false, emailPolling: false, sftpPolling: false, checkinLogs: false,
+    emailPolling: false, sftpPolling: false, checkinLogs: false,
     notificationTemplates: false, companyBranding: false
   };
 }
@@ -56,18 +54,6 @@ function getDefaultPermissions(isAdmin: boolean): UserPermissions {
 function migratePermissions(perms: any): UserPermissions {
   const defaults = getDefaultPermissions(false);
   const migrated = { ...defaults, ...perms };
-  if (perms.extractPage === undefined && perms.extractionTypes !== undefined) {
-    migrated.extractPage = perms.extractionTypes;
-  }
-  if (perms.transformPage === undefined && perms.transformationTypes !== undefined) {
-    migrated.transformPage = perms.transformationTypes;
-  }
-  if (perms.executePage === undefined && perms.executeSetup !== undefined) {
-    migrated.executePage = perms.executeSetup;
-  }
-  if (perms.executeSetup === undefined && perms.workflowManagement !== undefined) {
-    migrated.executeSetup = perms.workflowManagement;
-  }
   if (perms.vendorSetup === undefined && perms.userManagement !== undefined) {
     migrated.vendorSetup = perms.userManagement;
   }
@@ -100,9 +86,6 @@ function migratePermissions(perms: any): UserPermissions {
   }
   if (perms.driverManagement === undefined) {
     migrated.driverManagement = perms.checkinSetup ?? false;
-  }
-  if (perms.workflowLogs === undefined) {
-    migrated.workflowLogs = perms.extractionLogs ?? false;
   }
   if (perms.emailPolling === undefined) {
     migrated.emailPolling = perms.extractionLogs ?? false;
@@ -148,12 +131,11 @@ function buildUserFromData(userData: any): User {
     hasRateQuoteAccess: userData.has_rate_quote_access || false,
     hasAddressBookAccess: userData.has_address_book_access || false,
     hasTrackTraceAccess: userData.has_track_trace_access || false,
-    hasInvoiceAccess: userData.has_invoice_access || false,
-    hasExecuteSetupAccess: userData.has_execute_setup_access || false
+    hasInvoiceAccess: userData.has_invoice_access || false
   };
 }
 
-const USER_SELECT_FIELDS = 'id, username, name, email, is_admin, is_active, permissions, role, preferred_upload_mode, current_zone, client_id, is_client_admin, has_order_entry_access, has_rate_quote_access, has_address_book_access, has_track_trace_access, has_invoice_access, has_execute_setup_access';
+const USER_SELECT_FIELDS = 'id, username, name, email, is_admin, is_active, permissions, role, preferred_upload_mode, current_zone, client_id, is_client_admin, has_order_entry_access, has_rate_quote_access, has_address_book_access, has_track_trace_access, has_invoice_access';
 
 async function fetchUserProfile(userId: string, loginType?: 'admin' | 'client'): Promise<User | null> {
   let query = supabase.from('users').select(USER_SELECT_FIELDS).eq('id', userId).eq('is_active', true);
@@ -392,69 +374,9 @@ export function useAuth() {
     }
   };
 
-  const getUserExtractionTypes = async (userId: string): Promise<string[]> => {
-    try {
-      const { data, error } = await supabase.from('user_extraction_types').select('extraction_type_id').eq('user_id', userId);
-      if (error) throw error;
-      return (data || []).map(item => item.extraction_type_id);
-    } catch { return []; }
-  };
-
-  const updateUserExtractionTypes = async (userId: string, extractionTypeIds: string[]): Promise<{ success: boolean; message: string }> => {
-    try {
-      await supabase.from('user_extraction_types').delete().eq('user_id', userId);
-      if (extractionTypeIds.length > 0) {
-        const { error } = await supabase.from('user_extraction_types').insert(extractionTypeIds.map(typeId => ({ user_id: userId, extraction_type_id: typeId })));
-        if (error) throw error;
-      }
-      return { success: true, message: 'Extraction type permissions updated successfully' };
-    } catch { return { success: false, message: 'Failed to update extraction type permissions' }; }
-  };
-
-  const getUserTransformationTypes = async (userId: string): Promise<string[]> => {
-    try {
-      const { data, error } = await supabase.from('user_transformation_types').select('transformation_type_id').eq('user_id', userId);
-      if (error) throw error;
-      return (data || []).map(item => item.transformation_type_id);
-    } catch { return []; }
-  };
-
-  const updateUserTransformationTypes = async (userId: string, transformationTypeIds: string[]): Promise<{ success: boolean; message: string }> => {
-    try {
-      await supabase.from('user_transformation_types').delete().eq('user_id', userId);
-      if (transformationTypeIds.length > 0) {
-        const { error } = await supabase.from('user_transformation_types').insert(transformationTypeIds.map(typeId => ({ user_id: userId, transformation_type_id: typeId })));
-        if (error) throw error;
-      }
-      return { success: true, message: 'Transformation type permissions updated successfully' };
-    } catch { return { success: false, message: 'Failed to update transformation type permissions' }; }
-  };
-
-  const getUserExecuteCategories = async (userId: string): Promise<string[]> => {
-    try {
-      const { data, error } = await supabase.from('user_execute_category_access').select('category_id').eq('user_id', userId);
-      if (error) throw error;
-      return (data || []).map(item => item.category_id);
-    } catch { return []; }
-  };
-
-  const updateUserExecuteCategories = async (userId: string, categoryIds: string[]): Promise<{ success: boolean; message: string }> => {
-    try {
-      await supabase.from('user_execute_category_access').delete().eq('user_id', userId);
-      if (categoryIds.length > 0) {
-        const { error } = await supabase.from('user_execute_category_access').insert(categoryIds.map(categoryId => ({ user_id: userId, category_id: categoryId })));
-        if (error) throw error;
-      }
-      return { success: true, message: 'Execute category permissions updated successfully' };
-    } catch { return { success: false, message: 'Failed to update execute category permissions' }; }
-  };
-
   return {
     ...authState, loading, sessionExpiredMessage,
     login, logout, clearSessionExpiredMessage,
-    createUser, getAllUsers, updateUser, deleteUser, updateUserPassword, changeOwnPassword,
-    getUserExtractionTypes, updateUserExtractionTypes,
-    getUserTransformationTypes, updateUserTransformationTypes,
-    getUserExecuteCategories, updateUserExecuteCategories
+    createUser, getAllUsers, updateUser, deleteUser, updateUserPassword, changeOwnPassword
   };
 }

@@ -50,8 +50,6 @@ export default function App() {
     updateUser,
     deleteUser,
     updateUserPassword,
-    getUserExecuteCategories,
-    updateUserExecuteCategories
   } = useAuth();
   const [currentPage, setCurrentPage] = useState<'vendor-setup' | 'checkin-setup' | 'client-setup' | 'settings' | 'logs' | 'order-entry' | 'order-submissions' | 'order-submission-detail' | 'rate-quote' | 'client-users' | 'address-book'>('client-setup');
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
@@ -406,8 +404,6 @@ export default function App() {
           updateUser={updateUser}
           deleteUser={deleteUser}
           updateUserPassword={updateUserPassword}
-          getUserExecuteCategories={getUserExecuteCategories}
-          updateUserExecuteCategories={updateUserExecuteCategories}
           onUpdateSftpConfig={handleUpdateSftpConfig}
           onUpdateSettingsConfig={handleUpdateSettingsConfig}
           onUpdateApiConfig={handleUpdateApiConfig}

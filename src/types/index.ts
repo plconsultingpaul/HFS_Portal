@@ -152,20 +152,12 @@ export interface VendorExtractionRule {
 }
 
 export interface UserPermissions {
-  extractPage: boolean;
-  extractionTypes: boolean;
-  transformPage: boolean;
-  transformationTypes: boolean;
-  executePage: boolean;
-  executeSetup: boolean;
   sftp: boolean;
   api: boolean;
   emailMonitoring: boolean;
   emailRules: boolean;
   processedEmails: boolean;
-  extractionLogs: boolean;
   userManagement: boolean;
-  workflowManagement: boolean;
   vendorSetup: boolean;
   clientSetup: boolean;
   checkinSetup: boolean;
@@ -177,7 +169,6 @@ export interface UserPermissions {
   trackTrace: boolean;
   driverCheckin: boolean;
   driverManagement: boolean;
-  workflowLogs: boolean;
   emailPolling: boolean;
   sftpPolling: boolean;
   checkinLogs: boolean;
@@ -203,7 +194,6 @@ export interface User {
   hasAddressBookAccess?: boolean;
   hasTrackTraceAccess?: boolean;
   hasInvoiceAccess?: boolean;
-  hasExecuteSetupAccess?: boolean;
   createdAt?: string;
   lastLogin?: string;
   invitationSentAt?: string;
