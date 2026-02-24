@@ -1,63 +1,3 @@
-export type FunctionOperator =
-  | 'equals'
-  | 'not_equals'
-  | 'in'
-  | 'not_in'
-  | 'greater_than'
-  | 'less_than'
-  | 'contains'
-  | 'starts_with'
-  | 'ends_with'
-  | 'is_empty'
-  | 'is_not_empty';
-
-export interface FunctionConditionClause {
-  field: string;
-  operator: FunctionOperator;
-  value: any;
-}
-
-export interface FunctionCondition {
-  if: FunctionConditionClause;
-  additionalConditions?: FunctionConditionClause[];
-  then: any;
-}
-
-export interface ConditionalFunctionLogic {
-  conditions: FunctionCondition[];
-  default?: any;
-}
-
-export interface DateFunctionLogic {
-  type: 'date';
-  source: 'field' | 'current_date';
-  fieldName?: string;
-  operation: 'add' | 'subtract';
-  days: number;
-  outputFormat?: string;
-}
-
-export interface AddressLookupFunctionLogic {
-  type: 'address_lookup';
-  inputFields: string[];
-  lookupType: 'postal_code' | 'city' | 'province' | 'country' | 'full_address';
-  countryContext?: string;
-  defaultValue?: string;
-}
-
-export type FunctionType = 'conditional' | 'date' | 'address_lookup';
-
-export interface FieldMappingFunction {
-  id: string;
-  extraction_type_id: string;
-  function_name: string;
-  description?: string;
-  function_type: FunctionType;
-  function_logic: ConditionalFunctionLogic | DateFunctionLogic | AddressLookupFunctionLogic;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface FieldMapping {
   fieldName: string;
   type: 'ai' | 'mapped' | 'hardcoded' | 'function' | 'order_entry';
@@ -68,59 +8,6 @@ export interface FieldMapping {
   removeIfNull?: boolean;
   isWorkflowOnly?: boolean;
   functionId?: string;
-}
-
-export interface ArraySplitConfig {
-  id?: string;
-  extractionTypeId?: string;
-  targetArrayField: string;
-  splitBasedOnField: string;
-  splitStrategy: 'one_per_entry' | 'divide_evenly';
-  defaultToOneIfMissing?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface ArrayEntryField {
-  id?: string;
-  arrayEntryId?: string;
-  fieldName: string;
-  fieldType: 'hardcoded' | 'extracted' | 'mapped';
-  hardcodedValue?: string;
-  extractionInstruction?: string;
-  dataType?: 'string' | 'number' | 'integer' | 'boolean' | 'datetime';
-  maxLength?: number;
-  removeIfNull?: boolean;
-  fieldOrder: number;
-  createdAt?: string;
-}
-
-export interface ArrayEntryConditionRule {
-  fieldPath: string;
-  operator: 'equals' | 'notEquals' | 'contains' | 'notContains' | 'greaterThan' | 'lessThan' | 'greaterThanOrEqual' | 'lessThanOrEqual' | 'isEmpty' | 'isNotEmpty';
-  value: string;
-}
-
-export interface ArrayEntryConditions {
-  enabled: boolean;
-  logic: 'AND' | 'OR';
-  rules: ArrayEntryConditionRule[];
-}
-
-export interface ArrayEntryConfig {
-  id?: string;
-  extractionTypeId?: string;
-  targetArrayField: string;
-  entryOrder: number;
-  isEnabled: boolean;
-  fields: ArrayEntryField[];
-  conditions?: ArrayEntryConditions;
-  isRepeating?: boolean;
-  repeatInstruction?: string;
-  aiConditionInstruction?: string;
-  removeEntryIfRinNull?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 export interface ExtractionType {
@@ -146,8 +33,8 @@ export interface ExtractionType {
   jsonMultiPageProcessing?: boolean;
   defaultUploadMode?: 'manual' | 'auto';
   lockUploadMode?: boolean;
-  arraySplitConfigs?: ArraySplitConfig[];
-  arrayEntryConfigs?: ArrayEntryConfig[];
+  arraySplitConfigs?: any[];
+  arrayEntryConfigs?: any[];
   pageProcessingMode?: 'all' | 'single' | 'range';
   pageProcessingSinglePage?: number;
   pageProcessingRangeStart?: number;
@@ -160,49 +47,12 @@ export interface ExtractionType {
   successRecipientEmailOverride?: string;
 }
 
-export interface TransformationFieldMapping {
-  fieldName: string;
-  type: 'ai' | 'mapped' | 'hardcoded' | 'function';
-  value: string;
-  dataType?: 'string' | 'number' | 'integer' | 'datetime' | 'phone' | 'boolean' | 'zip_postal';
-  maxLength?: number;
-  pageNumberInGroup?: number;
-  functionId?: string;
-}
-
-export interface PageGroupConfig {
-  id: string;
-  transformationTypeId: string;
-  groupOrder: number;
-  pagesPerGroup: number;
-  workflowId?: string;
-  workflowVersion?: 'v1' | 'v2';
-  workflowV2Id?: string;
-  smartDetectionPattern?: string;
-  processMode: 'single' | 'all';
-  filenameTemplate?: string;
-  fieldMappings?: TransformationFieldMapping[];
-  useAiDetection?: boolean;
-  fallbackBehavior?: 'skip' | 'fixed_position' | 'error';
-  detectionConfidenceThreshold?: number;
-  followsPreviousGroup?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface ManualGroupEdit {
-  groupIndex: number;
-  groupOrder: number;
-  pages: number[];
-  pageGroupConfig: PageGroupConfig;
-}
-
 export interface TransformationType {
   id: string;
   name: string;
   defaultInstructions: string;
   filenameTemplate: string;
-  fieldMappings?: TransformationFieldMapping[];
+  fieldMappings?: any[];
   autoDetectInstructions?: string;
   workflowId?: string;
   workflowVersion?: 'v1' | 'v2';
@@ -214,7 +64,7 @@ export interface TransformationType {
   pagesPerGroup?: number;
   documentStartPattern?: string;
   documentStartDetectionEnabled?: boolean;
-  pageGroupConfigs?: PageGroupConfig[];
+  pageGroupConfigs?: any[];
   lockUploadMode?: boolean;
 }
 
@@ -269,37 +119,6 @@ export interface WorkflowStep {
   userResponseTemplate?: string;
 }
 
-export type ExecuteButtonStepType = 'api_call' | 'api_endpoint' | 'data_transform' | 'sftp_upload' | 'conditional_check' | 'email_action' | 'rename_file';
-
-export interface ExecuteButtonStep {
-  id: string;
-  buttonId: string;
-  stepOrder: number;
-  stepType: ExecuteButtonStepType;
-  stepName: string;
-  configJson: any;
-  nextStepOnSuccessId?: string;
-  nextStepOnFailureId?: string;
-  escapeSingleQuotesInBody?: boolean;
-  isEnabled: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface ApiEndpointStepConfig {
-  apiSourceType: 'main' | 'secondary';
-  apiEndpointId?: string;
-  secondaryApiId?: string;
-  httpMethod: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  apiSpecEndpointId?: string;
-  apiPath: string;
-  queryParameterConfig: Record<string, { enabled: boolean; value: string }>;
-  pathVariables?: Record<string, string>;
-  responsePath?: string;
-  updateJsonPath?: string;
-  manualApiEntry?: boolean;
-}
-
 export interface Workflow {
   id: string;
   name: string;
@@ -308,55 +127,6 @@ export interface Workflow {
   steps?: WorkflowStep[];
   createdAt?: string;
   updatedAt?: string;
-}
-
-export interface PageRangeInfo {
-  groupOrder: number;
-  startPage: number;
-  endPage: number;
-  groupName?: string;
-}
-
-export interface ExtractionLog {
-  id: string;
-  userId?: string;
-  extractionTypeId?: string;
-  transformationTypeId?: string;
-  pdfFilename: string;
-  pdfPages: number;
-  extractionStatus: 'success' | 'failed';
-  errorMessage?: string;
-  extractedData?: string;
-  processingMode?: 'extraction' | 'transformation';
-  parseitId?: number;
-  createdAt: string;
-  pageStart?: number;
-  pageEnd?: number;
-  pageRanges?: PageRangeInfo[];
-  unusedPages?: number;
-}
-
-export interface WorkflowExecutionLog {
-  id: string;
-  workflowId: string;
-  extractionLogId?: string;
-  status: 'running' | 'completed' | 'failed';
-  currentStepId?: string;
-  currentStepName?: string;
-  errorMessage?: string;
-  contextData?: any;
-  createdAt: string;
-  startedAt: string;
-  updatedAt?: string;
-  completedAt?: string;
-  userId?: string;
-  processingMode?: 'extraction' | 'transformation';
-  extractionTypeId?: string;
-  transformationTypeId?: string;
-  senderEmail?: string;
-  failureNotificationSent?: boolean;
-  successNotificationSent?: boolean;
-  notificationSentAt?: string;
 }
 
 export interface DetectionResult {
@@ -530,47 +300,12 @@ export interface EmailProcessingRule {
   updatedAt?: string;
 }
 
-export type WorkflowV2Type = 'extraction' | 'transformation' | 'imaging';
-
 export interface WorkflowV2 {
   id: string;
   name: string;
   description?: string;
-  workflowType: WorkflowV2Type;
+  workflowType: 'extraction' | 'transformation' | 'imaging';
   isActive: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export type WorkflowV2StepType = 'api_call' | 'api_endpoint' | 'conditional_check' | 'data_transform' | 'sftp_upload' | 'email_action' | 'rename_file' | 'multipart_form_upload' | 'ai_decision' | 'imaging' | 'read_email';
-
-export interface WorkflowV2Node {
-  id: string;
-  workflowId: string;
-  nodeType: 'start' | 'workflow';
-  positionX: number;
-  positionY: number;
-  width?: number;
-  height?: number;
-  label: string;
-  stepType?: WorkflowV2StepType;
-  configJson: any;
-  escapeSingleQuotesInBody?: boolean;
-  userResponseTemplate?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface WorkflowV2Edge {
-  id: string;
-  workflowId: string;
-  sourceNodeId: string;
-  targetNodeId: string;
-  sourceHandle: string;
-  targetHandle: string;
-  label?: string;
-  edgeType: string;
-  animated: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -643,13 +378,6 @@ export interface ParseItLicense {
   imaging: boolean;
   rawPayload: Record<string, unknown>;
   uploadedAt: string;
-}
-
-export interface UserExtractionType {
-  id: string;
-  userId: string;
-  extractionTypeId: string;
-  createdAt: string;
 }
 
 export interface Client {
@@ -893,19 +621,6 @@ export interface ApiError {
   details: any;
   url: string;
   headers: Record<string, string>;
-}
-
-export interface PageProcessingState {
-  isProcessing: boolean;
-  isExtracting: boolean;
-  extractedData: string;
-  workflowOnlyData?: string;
-  extractionError: string;
-  apiResponse: string;
-  apiError: ApiError | null;
-  success: boolean;
-  workflowExecutionLogId?: string;
-  workflowExecutionLog?: WorkflowExecutionLog | null;
 }
 
 export interface EmailPollingLog {
@@ -1399,93 +1114,4 @@ export interface ImagingBucket {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface ImagingDocumentType {
-  id: string;
-  name: string;
-  description: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ImagingDocument {
-  id: string;
-  bucketId: string;
-  documentTypeId: string;
-  detailLineId: string;
-  billNumber: string;
-  storagePath: string;
-  originalFilename: string;
-  fileSize: number;
-  uploadedBy?: string;
-  createdAt: string;
-  updatedAt: string;
-  bucketName?: string;
-  documentTypeName?: string;
-  bucketUrl?: string;
-}
-
-export interface ImagingBarcodePattern {
-  id: string;
-  name: string;
-  patternTemplate: string;
-  separator: string;
-  fixedDocumentType: string | null;
-  bucketId: string;
-  priority: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  bucketName?: string;
-}
-
-export interface ImagingUnindexedItem {
-  id: string;
-  bucketId: string;
-  storagePath: string;
-  originalFilename: string;
-  fileSize: number;
-  detectedBarcodes: string[];
-  sourceSftpConfigId: string | null;
-  sourceEmailConfigId: string | null;
-  sourceType: 'sftp' | 'email';
-  status: 'pending' | 'indexed' | 'discarded';
-  detailLineId: string | null;
-  documentTypeId: string | null;
-  billNumber: string | null;
-  indexedBy: string | null;
-  indexedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  bucketName?: string;
-  bucketUrl?: string;
-  documentTypeName?: string;
-}
-
-export interface ImagingEmailMonitoringConfig {
-  provider: 'office365' | 'gmail';
-  tenantId: string;
-  clientId: string;
-  clientSecret: string;
-  gmailClientId: string;
-  gmailClientSecret: string;
-  gmailRefreshToken: string;
-  monitoredEmail: string;
-  gmailMonitoredLabel: string;
-  imagingBucketId: string | null;
-  pollingInterval: number;
-  isEnabled: boolean;
-  lastCheck?: string;
-  checkAllMessages: boolean;
-  postProcessAction: PostProcessAction;
-  processedFolderPath: string;
-  postProcessActionOnFailure: PostProcessAction;
-  failureFolderPath: string;
-  cronEnabled?: boolean;
-  cronJobId?: number;
-  cronSchedule?: string;
-  lastCronRun?: string;
-  nextCronRun?: string;
 }
