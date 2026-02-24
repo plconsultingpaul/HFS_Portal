@@ -4,13 +4,9 @@ import { fetchActiveLicense, validateAndStoreLicense } from '../services/license
 import { supabase } from '../lib/supabase';
 
 export type LicenseFeatureKey =
-  | 'extract'
-  | 'transform'
-  | 'execute'
   | 'clientSetup'
   | 'vendorSetup'
-  | 'checkInSetup'
-  | 'imaging';
+  | 'checkInSetup';
 
 interface LicenseContextValue {
   license: ParseItLicense | null;

@@ -369,13 +369,9 @@ export interface ParseItLicense {
   customerName: string;
   issuedAt: string;
   expiryDate: string | null;
-  extract: boolean;
-  transform: boolean;
-  execute: boolean;
   clientSetup: boolean;
   vendorSetup: boolean;
   checkInSetup: boolean;
-  imaging: boolean;
   rawPayload: Record<string, unknown>;
   uploadedAt: string;
 }

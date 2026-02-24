@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Upload, CheckCircle, XCircle, Clock, Shield, FileText, RefreshCw, Camera, Building2, Package, ClipboardCheck, Play, AlertTriangle } from 'lucide-react';
+import { Upload, CheckCircle, XCircle, Clock, Shield, RefreshCw, Building2, Package, ClipboardCheck, AlertTriangle } from 'lucide-react';
 import { useLicense } from '../../hooks/useLicense';
 import type { LicenseFeatureKey } from '../../hooks/useLicense';
 
@@ -9,13 +9,9 @@ const FEATURE_CONFIG: {
   description: string;
   icon: React.ElementType;
 }[] = [
-  { key: 'extract', label: 'Extractions', description: 'Extract sidebar & Extraction Types settings', icon: FileText },
-  { key: 'transform', label: 'Transformations', description: 'Transform sidebar & Transformation Types settings', icon: RefreshCw },
-  { key: 'execute', label: 'Execute Flows', description: 'Execute sidebar & Execute Setup settings', icon: Play },
   { key: 'clientSetup', label: 'Client Portal', description: 'Client Setup sidebar', icon: Building2 },
   { key: 'vendorSetup', label: 'Vendor Portal', description: 'Vendor Setup sidebar', icon: Package },
   { key: 'checkInSetup', label: 'Driver Check-In', description: 'Check-In Setup sidebar', icon: ClipboardCheck },
-  { key: 'imaging', label: 'Imaging', description: 'Imaging module (Coming Soon)', icon: Camera },
 ];
 
 export default function LicenseSettings() {
@@ -212,11 +208,6 @@ export default function LicenseSettings() {
                           >
                             {feature.label}
                           </span>
-                          {feature.key === 'imaging' && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-                              Coming Soon
-                            </span>
-                          )}
                         </div>
                         <p
                           className={`text-xs mt-0.5 ${
