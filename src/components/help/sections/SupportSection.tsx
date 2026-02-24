@@ -17,19 +17,19 @@ export default function SupportSection() {
           <div>
             <h3 className="font-semibold text-gray-800 mb-4">Getting Help:</h3>
             <ul className="text-gray-700 space-y-2">
-              <li>• Check the Extraction Logs for detailed error messages</li>
-              <li>• Use the test buttons in settings to verify configurations</li>
-              <li>• Start with simple extraction types before creating complex ones</li>
-              <li>• Review the AI's extracted data before sending to production systems</li>
+              <li>- Check the Logs page for detailed error messages</li>
+              <li>- Use the test buttons in settings to verify configurations</li>
+              <li>- Review API connection status before submitting orders</li>
+              <li>- Verify user permissions if features are unavailable</li>
             </ul>
           </div>
           <div>
             <h3 className="font-semibold text-gray-800 mb-4">Tips for Success:</h3>
             <ul className="text-gray-700 space-y-2">
-              <li>• Use clear, descriptive names for extraction types</li>
-              <li>• Test extraction types with various PDF samples</li>
-              <li>• Keep extraction instructions concise but detailed</li>
-              <li>• Regularly backup your extraction type configurations</li>
+              <li>- Use clear, descriptive names for templates and configurations</li>
+              <li>- Test API connections before going live</li>
+              <li>- Grant users only the permissions they need</li>
+              <li>- Review logs regularly to identify issues early</li>
             </ul>
           </div>
         </div>

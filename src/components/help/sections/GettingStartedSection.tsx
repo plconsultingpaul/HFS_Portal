@@ -13,17 +13,19 @@ export default function GettingStartedSection() {
         iconColor="text-green-600"
       />
       <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-        <h3 className="font-semibold text-green-800 mb-3">What is Parse-It?</h3>
+        <h3 className="font-semibold text-green-800 mb-3">Welcome to the Portal</h3>
         <p className="text-green-700 mb-4">
-          Parse-It is an AI-powered PDF data extraction application that converts unstructured PDF documents into structured XML or JSON data.
-          It uses Google's Gemini AI to intelligently extract information from your PDFs based on customizable templates and instructions.
+          This portal provides a centralized platform for managing client and vendor operations, including order entry, shipment tracking,
+          driver check-in, and email-based document processing. Use the sidebar navigation to access different features based on your permissions.
         </p>
-        <h3 className="font-semibold text-green-800 mb-3">Quick Start (3 Steps)</h3>
-        <ol className="text-green-700 space-y-2 list-decimal list-inside">
-          <li><strong>Upload a PDF:</strong> Click "Upload & Extract" and select your PDF file</li>
-          <li><strong>Choose Extraction Type:</strong> Select from pre-configured templates or use AI auto-detection</li>
-          <li><strong>Extract & Process:</strong> Click "Extract & Send to API" or "Extract & Upload via SFTP" to process your document</li>
-        </ol>
+        <h3 className="font-semibold text-green-800 mb-3">Key Features</h3>
+        <ul className="text-green-700 space-y-2">
+          <li>- <strong>Client Setup:</strong> Manage client accounts, users, and address books</li>
+          <li>- <strong>Vendor Setup:</strong> Configure vendor settings and upload rules</li>
+          <li>- <strong>Order Entry:</strong> Submit and track orders using configurable templates</li>
+          <li>- <strong>Track & Trace:</strong> Monitor shipment status with real-time tracking</li>
+          <li>- <strong>Driver Check-In:</strong> Streamline driver arrival and departure workflows</li>
+        </ul>
       </div>
     </SectionCard>
   );

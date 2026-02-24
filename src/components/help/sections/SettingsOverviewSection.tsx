@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, FileText, Server, Key, Mail, Filter, Users } from 'lucide-react';
+import { Settings, Server, Key, Mail, Filter, Users } from 'lucide-react';
 import SectionCard from '../shared/SectionCard';
 import SectionHeader from '../shared/SectionHeader';
 
@@ -15,21 +15,11 @@ export default function SettingsOverviewSection() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <div className="flex items-center space-x-3 mb-3">
-            <FileText className="h-6 w-6 text-purple-600" />
-            <h3 className="font-semibold text-gray-900">Extraction Types</h3>
-          </div>
-          <p className="text-gray-600 text-sm">
-            Create and manage templates for different document types. Define extraction instructions, output formats, and field mappings.
-          </p>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <div className="flex items-center space-x-3 mb-3">
             <Server className="h-6 w-6 text-blue-600" />
             <h3 className="font-semibold text-gray-900">SFTP Settings</h3>
           </div>
           <p className="text-gray-600 text-sm">
-            Configure your SFTP server connection for uploading extracted XML files and PDF documents.
+            Configure your SFTP server connection for uploading files and documents.
           </p>
         </div>
 
@@ -39,17 +29,17 @@ export default function SettingsOverviewSection() {
             <h3 className="font-semibold text-gray-900">API Settings</h3>
           </div>
           <p className="text-gray-600 text-sm">
-            Set up API endpoints for JSON data transmission and configure your Google Gemini API key for AI processing.
+            Set up API endpoints for data transmission and configure integration settings.
           </p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <div className="flex items-center space-x-3 mb-3">
-            <Mail className="h-6 w-6 text-indigo-600" />
+            <Mail className="h-6 w-6 text-blue-600" />
             <h3 className="font-semibold text-gray-900">Email Monitoring</h3>
           </div>
           <p className="text-gray-600 text-sm">
-            Configure Office 365 or Gmail monitoring to automatically process PDF attachments from incoming emails.
+            Configure Office 365 or Gmail monitoring to automatically process incoming email attachments.
           </p>
         </div>
 
@@ -59,7 +49,7 @@ export default function SettingsOverviewSection() {
             <h3 className="font-semibold text-gray-900">Email Rules</h3>
           </div>
           <p className="text-gray-600 text-sm">
-            Create rules to automatically match incoming emails to specific extraction types based on sender and subject patterns.
+            Create rules to automatically route incoming emails based on sender and subject patterns.
           </p>
         </div>
 

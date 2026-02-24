@@ -1,20 +1,14 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import GettingStartedSection from './sections/GettingStartedSection';
-import UploadModesSection from './sections/UploadModesSection';
-import ExtractionProcessSection from './sections/ExtractionProcessSection';
 import SettingsOverviewSection from './sections/SettingsOverviewSection';
 import EmailMonitoringSection from './sections/EmailMonitoringSection';
-import ExtractionTypesSection from './sections/ExtractionTypesSection';
-import FieldMappingsSection from './sections/FieldMappingsSection';
-import WorkflowsSection from './sections/WorkflowsSection';
 import UserManagementSection from './sections/UserManagementSection';
 import TroubleshootingSection from './sections/TroubleshootingSection';
 import BestPracticesSection from './sections/BestPracticesSection';
 import ToolsSection from './sections/ToolsSection';
 import ApiConfigurationSection from './sections/ApiConfigurationSection';
 import SupportSection from './sections/SupportSection';
-import EmailActionsSection from './sections/EmailActionsSection';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -42,8 +36,8 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
       <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col my-4">
         <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-t-2xl">
           <div>
-            <h2 className="text-2xl font-bold text-white">Parse-It Help Center</h2>
-            <p className="text-blue-100 mt-1">Complete guide to using Parse-It for PDF data extraction</p>
+            <h2 className="text-2xl font-bold text-white">Help Center</h2>
+            <p className="text-blue-100 mt-1">Complete guide to managing your Client & Vendor Portal</p>
           </div>
           <button
             onClick={onClose}
@@ -56,20 +50,14 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
         <div className="flex-1 overflow-y-auto p-6">
           <div className="space-y-8">
             <GettingStartedSection />
-            <UploadModesSection />
-            <ExtractionProcessSection />
             <SettingsOverviewSection />
             <EmailMonitoringSection />
-            <ExtractionTypesSection />
-            <FieldMappingsSection />
-            <WorkflowsSection />
             <UserManagementSection />
             <TroubleshootingSection />
             <BestPracticesSection />
             <ToolsSection />
             <ApiConfigurationSection />
             <SupportSection />
-            <EmailActionsSection />
           </div>
         </div>
       </div>
