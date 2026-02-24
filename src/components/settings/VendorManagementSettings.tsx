@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Save, Users, Shield, User as UserIcon, Eye, EyeOff, Settings, FileText, Server, Key, Mail, Filter, Database, GitBranch, Brain, RefreshCw, ArrowUp, ArrowDown, Copy, Edit } from 'lucide-react';
 import type { User, VendorExtractionRule, ExtractionType, TransformationType } from '../../types';
 import Select from '../common/Select';
-import { getAuthHeaders } from '../../lib/supabase';
+import { supabase, getAuthHeaders } from '../../lib/supabase';
 
 interface VendorManagementSettingsProps {
   currentUser: User;
-  extractionTypes: ExtractionType[];
-  transformationTypes: TransformationType[];
   getAllUsers: () => Promise<User[]>;
   createUser: (username: string, password: string, isAdmin: boolean, role: 'admin' | 'user' | 'vendor') => Promise<{ success: boolean; message: string }>;
   updateUser: (userId: string, updates: { isAdmin?: boolean; isActive?: boolean; permissions?: any; role?: 'admin' | 'user' | 'vendor'; currentZone?: string }) => Promise<{ success: boolean; message: string }>;
@@ -17,14 +15,14 @@ interface VendorManagementSettingsProps {
 
 export default function VendorManagementSettings({
   currentUser,
-  extractionTypes,
-  transformationTypes,
   getAllUsers,
   createUser,
   updateUser,
   deleteUser,
   updateUserPassword
 }: VendorManagementSettingsProps) {
+  const [extractionTypes, setExtractionTypes] = useState<ExtractionType[]>([]);
+  const [transformationTypes, setTransformationTypes] = useState<TransformationType[]>([]);
   const [vendors, setVendors] = useState<User[]>([]);
   const [vendorRules, setVendorRules] = useState<Record<string, VendorExtractionRule[]>>({});
   const [loading, setLoading] = useState(true);
@@ -63,8 +61,22 @@ export default function VendorManagementSettings({
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+    loadTypes();
     loadVendors();
   }, []);
+
+  const loadTypes = async () => {
+    try {
+      const [{ data: extData }, { data: transData }] = await Promise.all([
+        supabase.from('extraction_types').select('id, name').order('name'),
+        supabase.from('transformation_types').select('id, name').order('name'),
+      ]);
+      setExtractionTypes((extData || []).map(t => ({ id: t.id, name: t.name })) as ExtractionType[]);
+      setTransformationTypes((transData || []).map(t => ({ id: t.id, name: t.name })) as TransformationType[]);
+    } catch (err) {
+      console.error('Failed to load types:', err);
+    }
+  };
 
   const loadVendors = async () => {
     setLoading(true);

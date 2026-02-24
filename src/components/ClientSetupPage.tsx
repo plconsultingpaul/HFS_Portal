@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Users, Building2, ClipboardList, FileText, Search } from 'lucide-react';
-import type { User, ExtractionType, TransformationType, Client } from '../types';
+import type { User, Client } from '../types';
 import ClientManagementSettings from './settings/ClientManagementSettings';
 import ClientUsersManagementSettings from './settings/ClientUsersManagementSettings';
 import OrderEntryConfigSettings from './settings/OrderEntryConfigSettings';
@@ -9,8 +9,6 @@ import TrackTraceTemplatesSettings from './settings/TrackTraceTemplatesSettings'
 
 interface ClientSetupPageProps {
   currentUser: User;
-  extractionTypes: ExtractionType[];
-  transformationTypes: TransformationType[];
   getAllUsers: () => Promise<User[]>;
   createUser: (username: string, password: string, isAdmin: boolean, role: 'admin' | 'user' | 'vendor' | 'client', email?: string) => Promise<{ success: boolean; message: string }>;
   updateUser: (userId: string, updates: { isAdmin?: boolean; isActive?: boolean; permissions?: any; role?: 'admin' | 'user' | 'vendor' | 'client'; currentZone?: string; clientId?: string; isClientAdmin?: boolean; hasOrderEntryAccess?: boolean; hasRateQuoteAccess?: boolean; hasTrackTraceAccess?: boolean; hasInvoiceAccess?: boolean; email?: string }) => Promise<{ success: boolean; message: string }>;
@@ -22,8 +20,6 @@ type ClientSetupTab = 'clients' | 'users' | 'orderEntry' | 'submissions' | 'trac
 
 export default function ClientSetupPage({
   currentUser,
-  extractionTypes,
-  transformationTypes,
   getAllUsers,
   createUser,
   updateUser,

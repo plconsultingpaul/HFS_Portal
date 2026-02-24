@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Users, Database } from 'lucide-react';
-import type { User, ApiConfig, ExtractionType, TransformationType } from '../types';
+import type { User, ApiConfig } from '../types';
 import VendorManagementSettings from './settings/VendorManagementSettings';
 import OrdersDisplayConfiguration from './orders/OrdersDisplayConfiguration';
 import CustomDisplayLabels from './orders/CustomDisplayLabels';
@@ -10,8 +10,6 @@ import { Save } from 'lucide-react';
 interface VendorSetupPageProps {
   currentUser: User;
   apiConfig: ApiConfig;
-  extractionTypes: ExtractionType[];
-  transformationTypes: TransformationType[];
   getAllUsers: () => Promise<User[]>;
   createUser: (username: string, password: string, isAdmin: boolean, role: 'admin' | 'user' | 'vendor') => Promise<{ success: boolean; message: string }>;
   updateUser: (userId: string, updates: { isAdmin?: boolean; isActive?: boolean; permissions?: any; role?: 'admin' | 'user' | 'vendor'; currentZone?: string }) => Promise<{ success: boolean; message: string }>;
@@ -25,8 +23,6 @@ type VendorSetupTab = 'vendors' | 'orders';
 export default function VendorSetupPage({
   currentUser,
   apiConfig,
-  extractionTypes,
-  transformationTypes,
   getAllUsers,
   createUser,
   updateUser,
@@ -85,8 +81,6 @@ export default function VendorSetupPage({
         return currentUser.permissions.userManagement ? (
           <VendorManagementSettings
             currentUser={currentUser}
-            extractionTypes={extractionTypes}
-            transformationTypes={transformationTypes}
             getAllUsers={getAllUsers}
             createUser={createUser}
             updateUser={updateUser}

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, Server, Key, Mail, Filter, Database, Settings as SettingsIcon, Users, GitBranch, RefreshCw, Shield, Bell } from 'lucide-react';
-import type { ExtractionType, SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule, ProcessedEmail, User } from '../types';
-import type { TransformationType } from '../types';
+import type { SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule, ProcessedEmail, User } from '../types';
 import type { CompanyBranding } from '../types';
 
 import SftpSettings from './settings/SftpSettings';
@@ -16,8 +15,6 @@ import LicenseSettings from './settings/LicenseSettings';
 import NotificationTemplatesSettings from './settings/NotificationTemplatesSettings';
 
 interface SettingsPageProps {
-  extractionTypes: ExtractionType[];
-  transformationTypes: TransformationType[];
   sftpConfig: SftpConfig;
   settingsConfig: SettingsConfig;
   apiConfig: ApiConfig;
@@ -26,18 +23,12 @@ interface SettingsPageProps {
   processedEmails: ProcessedEmail[];
   users: User[];
   currentUser: User;
-  workflows: any[];
-  workflowSteps: any[];
   companyBranding: CompanyBranding;
   getAllUsers: () => Promise<User[]>;
   createUser: (username: string, password: string, isAdmin: boolean) => Promise<{ success: boolean; message: string }>;
   updateUser: (userId: string, updates: { isAdmin?: boolean; isActive?: boolean }) => Promise<{ success: boolean; message: string }>;
   deleteUser: (userId: string) => Promise<{ success: boolean; message: string }>;
   updateUserPassword: (userId: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
-  getUserExtractionTypes: (userId: string) => Promise<string[]>;
-  updateUserExtractionTypes: (userId: string, extractionTypeIds: string[]) => Promise<{ success: boolean; message: string }>;
-  getUserTransformationTypes: (userId: string) => Promise<string[]>;
-  updateUserTransformationTypes: (userId: string, transformationTypeIds: string[]) => Promise<{ success: boolean; message: string }>;
   getUserExecuteCategories: (userId: string) => Promise<string[]>;
   updateUserExecuteCategories: (userId: string, categoryIds: string[]) => Promise<{ success: boolean; message: string }>;
   onUpdateSftpConfig: (config: SftpConfig) => Promise<void>;
@@ -53,8 +44,6 @@ interface SettingsPageProps {
 type SettingsTab = 'sftp' | 'api' | 'email' | 'users' | 'branding' | 'license' | 'notifications';
 
 export default function SettingsPage({
-  extractionTypes,
-  transformationTypes,
   sftpConfig,
   settingsConfig,
   apiConfig,
@@ -63,18 +52,12 @@ export default function SettingsPage({
   processedEmails,
   users,
   currentUser,
-  workflows,
-  workflowSteps,
   companyBranding,
   getAllUsers,
   createUser,
   updateUser,
   deleteUser,
   updateUserPassword,
-  getUserExtractionTypes,
-  updateUserExtractionTypes,
-  getUserTransformationTypes,
-  updateUserTransformationTypes,
   getUserExecuteCategories,
   updateUserExecuteCategories,
   onUpdateSftpConfig,
@@ -105,9 +88,6 @@ export default function SettingsPage({
           <SftpSettings
             sftpConfig={sftpConfig}
             onUpdateSftpConfig={onUpdateSftpConfig}
-            extractionTypes={extractionTypes}
-            transformationTypes={transformationTypes}
-            workflows={workflows}
             onUpdateSftpPollingConfigs={onUpdateSftpPollingConfigs}
             onRefreshSftpPollingLogs={async () => {
               console.log('Refreshing SFTP polling logs');
@@ -129,8 +109,6 @@ export default function SettingsPage({
           <EmailMonitoringSettings
             emailConfig={emailConfig}
             emailRules={emailRules}
-            extractionTypes={extractionTypes}
-            transformationTypes={transformationTypes}
             onUpdateEmailConfig={onUpdateEmailConfig}
             onUpdateEmailRules={onUpdateEmailRules}
             isAdmin={currentUser.isAdmin}
@@ -144,12 +122,6 @@ export default function SettingsPage({
             createUser={createUser}
             updateUser={updateUser}
             deleteUser={deleteUser}
-            extractionTypes={extractionTypes}
-            getUserExtractionTypes={getUserExtractionTypes}
-            updateUserExtractionTypes={updateUserExtractionTypes}
-            transformationTypes={transformationTypes}
-            getUserTransformationTypes={getUserTransformationTypes}
-            updateUserTransformationTypes={updateUserTransformationTypes}
             getUserExecuteCategories={getUserExecuteCategories}
             updateUserExecuteCategories={updateUserExecuteCategories}
           />

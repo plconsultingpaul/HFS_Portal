@@ -70,12 +70,6 @@ interface UserManagementSettingsProps {
   createUser: (username: string, password: string | undefined, isAdmin: boolean, role: 'admin' | 'user' | 'vendor', email?: string) => Promise<{ success: boolean; message: string }>;
   updateUser: (userId: string, updates: { isAdmin?: boolean; isActive?: boolean; permissions?: any }) => Promise<{ success: boolean; message: string }>;
   deleteUser: (userId: string) => Promise<{ success: boolean; message: string }>;
-  extractionTypes: ExtractionType[];
-  getUserExtractionTypes: (userId: string) => Promise<string[]>;
-  updateUserExtractionTypes: (userId: string, extractionTypeIds: string[]) => Promise<{ success: boolean; message: string }>;
-  transformationTypes: TransformationType[];
-  getUserTransformationTypes: (userId: string) => Promise<string[]>;
-  updateUserTransformationTypes: (userId: string, transformationTypeIds: string[]) => Promise<{ success: boolean; message: string }>;
   getUserExecuteCategories: (userId: string) => Promise<string[]>;
   updateUserExecuteCategories: (userId: string, categoryIds: string[]) => Promise<{ success: boolean; message: string }>;
 }
@@ -86,12 +80,6 @@ export default function UserManagementSettings({
   createUser,
   updateUser,
   deleteUser,
-  extractionTypes,
-  getUserExtractionTypes,
-  updateUserExtractionTypes,
-  transformationTypes,
-  getUserTransformationTypes,
-  updateUserTransformationTypes,
   getUserExecuteCategories,
   updateUserExecuteCategories
 }: UserManagementSettingsProps) {
@@ -140,6 +128,8 @@ export default function UserManagementSettings({
   const [sendingEmail, setSendingEmail] = useState<string | null>(null);
   const [selectedExecuteCategoryIds, setSelectedExecuteCategoryIds] = useState<string[]>([]);
   const [executeCategories, setExecuteCategories] = useState<ExecuteCategory[]>([]);
+  const [extractionTypes, setExtractionTypes] = useState<ExtractionType[]>([]);
+  const [transformationTypes, setTransformationTypes] = useState<TransformationType[]>([]);
   const [newUserExtractionTypeIds, setNewUserExtractionTypeIds] = useState<string[]>([]);
   const [newUserTransformationTypeIds, setNewUserTransformationTypeIds] = useState<string[]>([]);
   const [newUserExecuteCategoryIds, setNewUserExecuteCategoryIds] = useState<string[]>([]);
@@ -214,8 +204,60 @@ export default function UserManagementSettings({
   const allPermissionOptions = permissionCategories.flatMap(cat => cat.permissions);
 
   useEffect(() => {
+    loadTypes();
     loadUsers();
   }, []);
+
+  const loadTypes = async () => {
+    try {
+      const [{ data: extData }, { data: transData }] = await Promise.all([
+        supabase.from('extraction_types').select('id, name').order('name'),
+        supabase.from('transformation_types').select('id, name').order('name'),
+      ]);
+      setExtractionTypes((extData || []).map(t => ({ id: t.id, name: t.name })) as ExtractionType[]);
+      setTransformationTypes((transData || []).map(t => ({ id: t.id, name: t.name })) as TransformationType[]);
+    } catch (err) {
+      console.error('Failed to load types:', err);
+    }
+  };
+
+  const getUserExtractionTypes = async (userId: string): Promise<string[]> => {
+    try {
+      const { data, error } = await supabase.from('user_extraction_types').select('extraction_type_id').eq('user_id', userId);
+      if (error) throw error;
+      return (data || []).map(item => item.extraction_type_id);
+    } catch { return []; }
+  };
+
+  const updateUserExtractionTypes = async (userId: string, extractionTypeIds: string[]): Promise<{ success: boolean; message: string }> => {
+    try {
+      await supabase.from('user_extraction_types').delete().eq('user_id', userId);
+      if (extractionTypeIds.length > 0) {
+        const { error } = await supabase.from('user_extraction_types').insert(extractionTypeIds.map(typeId => ({ user_id: userId, extraction_type_id: typeId })));
+        if (error) throw error;
+      }
+      return { success: true, message: 'Extraction type permissions updated successfully' };
+    } catch { return { success: false, message: 'Failed to update extraction type permissions' }; }
+  };
+
+  const getUserTransformationTypes = async (userId: string): Promise<string[]> => {
+    try {
+      const { data, error } = await supabase.from('user_transformation_types').select('transformation_type_id').eq('user_id', userId);
+      if (error) throw error;
+      return (data || []).map(item => item.transformation_type_id);
+    } catch { return []; }
+  };
+
+  const updateUserTransformationTypes = async (userId: string, transformationTypeIds: string[]): Promise<{ success: boolean; message: string }> => {
+    try {
+      await supabase.from('user_transformation_types').delete().eq('user_id', userId);
+      if (transformationTypeIds.length > 0) {
+        const { error } = await supabase.from('user_transformation_types').insert(transformationTypeIds.map(typeId => ({ user_id: userId, transformation_type_id: typeId })));
+        if (error) throw error;
+      }
+      return { success: true, message: 'Transformation type permissions updated successfully' };
+    } catch { return { success: false, message: 'Failed to update transformation type permissions' }; }
+  };
 
   const loadUsers = async () => {
     setLoading(true);

@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Server, TestTube, Plus, Trash2, Play, Folder, RefreshCw } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import type { SftpConfig, SftpPollingConfig, ExtractionType, TransformationType, ExtractionWorkflow, SftpPollingLog } from '../../types';
+import type { SftpConfig, SftpPollingConfig, ExtractionType, ExtractionWorkflow, SftpPollingLog } from '../../types';
 
 interface SftpSettingsProps {
   sftpConfig: SftpConfig;
   onUpdateSftpConfig: (config: SftpConfig) => Promise<void>;
-  extractionTypes?: ExtractionType[];
-  transformationTypes?: TransformationType[];
-  workflows?: ExtractionWorkflow[];
   onUpdateSftpPollingConfigs?: (configs: SftpPollingConfig[]) => Promise<void>;
   onRefreshSftpPollingLogs?: () => Promise<SftpPollingLog[]>;
   isAdmin?: boolean;
@@ -17,13 +14,12 @@ interface SftpSettingsProps {
 export default function SftpSettings({
   sftpConfig,
   onUpdateSftpConfig,
-  extractionTypes = [],
-  transformationTypes = [],
-  workflows = [],
   onUpdateSftpPollingConfigs,
   onRefreshSftpPollingLogs,
   isAdmin = true
 }: SftpSettingsProps) {
+  const [extractionTypes, setExtractionTypes] = useState<ExtractionType[]>([]);
+  const [workflows, setWorkflows] = useState<ExtractionWorkflow[]>([]);
   const [localConfig, setLocalConfig] = useState<SftpConfig>(sftpConfig);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -40,9 +36,30 @@ export default function SftpSettings({
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
+    loadTypesAndWorkflows();
     loadPollingConfigs();
     loadPollingLogs();
   }, []);
+
+  const loadTypesAndWorkflows = async () => {
+    try {
+      const [{ data: extData }, { data: wfData }] = await Promise.all([
+        supabase.from('extraction_types').select('id, name').order('name'),
+        supabase.from('extraction_workflows').select('*').order('name'),
+      ]);
+      setExtractionTypes((extData || []).map(t => ({ id: t.id, name: t.name })) as ExtractionType[]);
+      setWorkflows((wfData || []).map((w: any) => ({
+        id: w.id,
+        name: w.name,
+        description: w.description || '',
+        isActive: w.is_active,
+        createdAt: w.created_at,
+        updatedAt: w.updated_at,
+      })) as ExtractionWorkflow[]);
+    } catch (err) {
+      console.error('Failed to load types and workflows:', err);
+    }
+  };
 
   const loadPollingConfigs = async () => {
     try {

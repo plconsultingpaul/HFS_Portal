@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import { Truck, UserCog } from 'lucide-react';
-import type { Workflow } from '../types';
 import DriverCheckinSettings from './settings/DriverCheckinSettings';
 import DriverManagementSettings from './settings/DriverManagementSettings';
 
-interface CheckInSetupPageProps {
-  workflows: Workflow[];
-}
-
 type CheckInSetupTab = 'driver-checkin' | 'driver-management';
 
-export default function CheckInSetupPage({ workflows }: CheckInSetupPageProps) {
+export default function CheckInSetupPage() {
   const [activeTab, setActiveTab] = useState<CheckInSetupTab>('driver-checkin');
 
   const tabs = [
@@ -21,7 +16,7 @@ export default function CheckInSetupPage({ workflows }: CheckInSetupPageProps) {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'driver-checkin':
-        return <DriverCheckinSettings workflows={workflows} />;
+        return <DriverCheckinSettings />;
       case 'driver-management':
         return <DriverManagementSettings />;
       default:

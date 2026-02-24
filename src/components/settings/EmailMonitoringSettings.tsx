@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Save, Mail, TestTube, Play, Pause, Cloud, Globe, Send, Filter, Clock, Calendar, CheckCircle, XCircle, AlertCircle, Settings, RefreshCw } from 'lucide-react';
-import type { EmailMonitoringConfig, EmailProcessingRule, ExtractionType, TransformationType, CronStatus, CronSettings, PostProcessAction } from '../../types';
+import type { EmailMonitoringConfig, EmailProcessingRule, CronStatus, CronSettings, PostProcessAction } from '../../types';
 import EmailRulesSettings from './EmailRulesSettings';
 import { supabase, getAuthHeaders } from '../../lib/supabase';
 
 interface EmailMonitoringSettingsProps {
   emailConfig: EmailMonitoringConfig;
   emailRules: EmailProcessingRule[];
-  extractionTypes: ExtractionType[];
-  transformationTypes: TransformationType[];
   onUpdateEmailConfig: (config: EmailMonitoringConfig) => Promise<void>;
   onUpdateEmailRules: (rules: EmailProcessingRule[]) => Promise<void>;
   isAdmin?: boolean;
@@ -19,8 +17,6 @@ type EmailTab = 'config' | 'rules';
 export default function EmailMonitoringSettings({
   emailConfig,
   emailRules,
-  extractionTypes,
-  transformationTypes,
   onUpdateEmailConfig,
   onUpdateEmailRules,
   isAdmin = true
@@ -1540,8 +1536,6 @@ export default function EmailMonitoringSettings({
       ) : (
         <EmailRulesSettings
           emailRules={emailRules}
-          extractionTypes={extractionTypes}
-          transformationTypes={transformationTypes}
           onUpdateEmailRules={onUpdateEmailRules}
         />
       )}

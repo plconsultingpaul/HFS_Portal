@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Save, AlertCircle, CheckCircle, Loader2, Truck, Download } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import type { Workflow, DriverCheckinSettings as DriverCheckinSettingsType } from '../../types';
-import Select from '../common/Select';
+import type { DriverCheckinSettings as DriverCheckinSettingsType } from '../../types';
 
-interface DriverCheckinSettingsProps {
-  workflows: Workflow[];
-}
-
-export default function DriverCheckinSettings({ workflows }: DriverCheckinSettingsProps) {
+export default function DriverCheckinSettings() {
   const [settings, setSettings] = useState<DriverCheckinSettingsType | null>(null);
-  const [fallbackWorkflowId, setFallbackWorkflowId] = useState('');
   const [isEnabled, setIsEnabled] = useState(false);
   const [baseUrl, setBaseUrl] = useState('');
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
@@ -53,7 +47,6 @@ export default function DriverCheckinSettings({ workflows }: DriverCheckinSettin
           updatedAt: data.updated_at
         };
         setSettings(settingsData);
-        setFallbackWorkflowId(data.fallback_workflow_id || '');
         setIsEnabled(data.is_enabled || false);
         setBaseUrl(data.base_url || '');
         setDarkModeEnabled(data.dark_mode_enabled || false);
@@ -104,17 +97,11 @@ export default function DriverCheckinSettings({ workflows }: DriverCheckinSettin
   };
 
   const handleSave = async () => {
-    if (!fallbackWorkflowId) {
-      setMessage({ type: 'error', text: 'Please select a fallback workflow' });
-      return;
-    }
-
     setSaving(true);
     setMessage(null);
 
     try {
       const updateData = {
-        fallback_workflow_id: fallbackWorkflowId,
         is_enabled: isEnabled,
         base_url: baseUrl || null,
         dark_mode_enabled: darkModeEnabled,
@@ -148,9 +135,6 @@ export default function DriverCheckinSettings({ workflows }: DriverCheckinSettin
       setSaving(false);
     }
   };
-
-  const activeWorkflows = workflows.filter(w => w.isActive);
-  const selectedWorkflow = workflows.find(w => w.id === fallbackWorkflowId);
 
   if (loading) {
     return (
@@ -219,16 +203,6 @@ export default function DriverCheckinSettings({ workflows }: DriverCheckinSettin
           When enabled, drivers will see the check-in page in dark mode when scanning the QR code
         </p>
 
-        {isEnabled && !fallbackWorkflowId && (
-          <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg flex items-start space-x-3">
-            <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-yellow-800 dark:text-yellow-400">
-              <p className="font-semibold mb-1">Configuration Required</p>
-              <p>Please select a fallback workflow before enabling the system. This workflow will be used when AI cannot detect the document type.</p>
-            </div>
-          </div>
-        )}
-
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Custom Base URL (Optional)
@@ -245,45 +219,10 @@ export default function DriverCheckinSettings({ workflows }: DriverCheckinSettin
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Fallback Workflow
-            <span className="text-red-500 ml-1">*</span>
-          </label>
-          <Select
-            value={fallbackWorkflowId || '__none__'}
-            onValueChange={(value) => setFallbackWorkflowId(value === '__none__' ? '' : value)}
-            options={[
-              { value: '__none__', label: 'Select a workflow...' },
-              ...activeWorkflows.map((workflow) => ({
-                value: workflow.id,
-                label: `${workflow.name}${workflow.description ? ` - ${workflow.description}` : ''}`
-              }))
-            ]}
-            helpText="This workflow will be used when AI auto-detection fails to identify the BOL document type"
-            required
-          />
-          {fallbackWorkflowId && selectedWorkflow && (
-            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
-              <p className="text-sm text-blue-900 dark:text-blue-300">
-                <span className="font-semibold">Selected Workflow:</span> {selectedWorkflow.name}
-              </p>
-              {selectedWorkflow.description && (
-                <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">{selectedWorkflow.description}</p>
-              )}
-              {selectedWorkflow.steps && (
-                <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-                  {selectedWorkflow.steps.length} step(s) configured
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={handleSave}
-            disabled={saving || !fallbackWorkflowId}
+            disabled={saving}
             className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             {saving ? (
@@ -301,7 +240,7 @@ export default function DriverCheckinSettings({ workflows }: DriverCheckinSettin
         </div>
       </div>
 
-      {isEnabled && fallbackWorkflowId && (
+      {isEnabled && (
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">QR Code for Driver Access</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
@@ -388,15 +327,7 @@ export default function DriverCheckinSettings({ workflows }: DriverCheckinSettin
           </li>
           <li className="flex items-start space-x-2">
             <span className="font-semibold text-blue-600 dark:text-blue-400">6.</span>
-            <span>AI auto-detection identifies document type and selects appropriate workflow</span>
-          </li>
-          <li className="flex items-start space-x-2">
-            <span className="font-semibold text-blue-600 dark:text-blue-400">7.</span>
-            <span>If detection fails, the fallback workflow configured above is used</span>
-          </li>
-          <li className="flex items-start space-x-2">
-            <span className="font-semibold text-blue-600 dark:text-blue-400">8.</span>
-            <span>Documents are processed and stored for review in the check-in logs</span>
+            <span>Documents are uploaded and stored for review in the check-in logs</span>
           </li>
         </ol>
       </div>

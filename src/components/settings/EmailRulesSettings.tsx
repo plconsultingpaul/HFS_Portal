@@ -5,8 +5,6 @@ import { supabase } from '../../lib/supabase';
 
 interface EmailRulesSettingsProps {
   emailRules: EmailProcessingRule[];
-  extractionTypes: ExtractionType[];
-  transformationTypes: TransformationType[];
   onUpdateEmailRules: (rules: EmailProcessingRule[]) => Promise<void>;
 }
 
@@ -31,20 +29,34 @@ async function fetchWorkflowsV2(): Promise<WorkflowV2[]> {
 
 export default function EmailRulesSettings({
   emailRules,
-  extractionTypes,
-  transformationTypes,
   onUpdateEmailRules
 }: EmailRulesSettingsProps) {
+  const [extractionTypes, setExtractionTypes] = useState<ExtractionType[]>([]);
+  const [transformationTypes, setTransformationTypes] = useState<TransformationType[]>([]);
   const [localRules, setLocalRules] = useState<EmailProcessingRule[]>(emailRules);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [workflowsV2, setWorkflowsV2] = useState<WorkflowV2[]>([]);
 
   useEffect(() => {
+    loadTypes();
     fetchWorkflowsV2()
       .then(setWorkflowsV2)
       .catch(err => console.error('Failed to fetch workflows v2:', err));
   }, []);
+
+  const loadTypes = async () => {
+    try {
+      const [{ data: extData }, { data: transData }] = await Promise.all([
+        supabase.from('extraction_types').select('id, name').order('name'),
+        supabase.from('transformation_types').select('id, name').order('name'),
+      ]);
+      setExtractionTypes((extData || []).map(t => ({ id: t.id, name: t.name })) as ExtractionType[]);
+      setTransformationTypes((transData || []).map(t => ({ id: t.id, name: t.name })) as TransformationType[]);
+    } catch (err) {
+      console.error('Failed to load types:', err);
+    }
+  };
 
   const addRule = () => {
     const newRule: EmailProcessingRule = {
