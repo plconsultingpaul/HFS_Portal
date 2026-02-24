@@ -50,18 +50,12 @@ export default function App() {
     updateUser,
     deleteUser,
     updateUserPassword,
-    getUserExtractionTypes,
-    updateUserExtractionTypes,
-    getUserTransformationTypes,
-    updateUserTransformationTypes,
     getUserExecuteCategories,
     updateUserExecuteCategories
   } = useAuth();
   const [currentPage, setCurrentPage] = useState<'vendor-setup' | 'checkin-setup' | 'client-setup' | 'settings' | 'logs' | 'order-entry' | 'order-submissions' | 'order-submission-detail' | 'rate-quote' | 'client-users' | 'address-book'>('client-setup');
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
   const {
-    extractionTypes,
-    transformationTypes,
     sftpConfig,
     settingsConfig,
     apiConfig,
@@ -69,8 +63,6 @@ export default function App() {
     emailRules,
     processedEmails,
     users,
-    workflows,
-    workflowSteps,
     emailPollingLogs,
     sftpPollingLogs,
     loading,
@@ -330,8 +322,6 @@ export default function App() {
         <VendorSetupPage
           currentUser={user}
           apiConfig={apiConfig}
-          extractionTypes={extractionTypes}
-          transformationTypes={transformationTypes}
           getAllUsers={getAllUsers}
           createUser={createUser}
           updateUser={updateUser}
@@ -341,15 +331,11 @@ export default function App() {
         />
       )}
       {currentPage === 'checkin-setup' && (
-        <CheckInSetupPage
-          workflows={workflows}
-        />
+        <CheckInSetupPage />
       )}
       {currentPage === 'client-setup' && (
         <ClientSetupPage
           currentUser={user}
-          extractionTypes={extractionTypes}
-          transformationTypes={transformationTypes}
           getAllUsers={getAllUsers}
           createUser={createUser}
           updateUser={updateUser}
@@ -385,8 +371,6 @@ export default function App() {
       {currentPage === 'client-users' && (
         <ClientSetupPage
           currentUser={user}
-          extractionTypes={extractionTypes}
-          transformationTypes={transformationTypes}
           getAllUsers={getAllUsers}
           createUser={createUser}
           updateUser={updateUser}
@@ -408,7 +392,6 @@ export default function App() {
       )}
       {currentPage === 'settings' && (
         <SettingsPage
-          extractionTypes={extractionTypes}
           sftpConfig={sftpConfig}
           settingsConfig={settingsConfig}
           apiConfig={apiConfig}
@@ -416,8 +399,6 @@ export default function App() {
           emailRules={emailRules}
           users={users}
           currentUser={user}
-          workflows={workflows}
-          workflowSteps={workflowSteps}
           companyBranding={companyBranding}
           processedEmails={processedEmails}
           getAllUsers={getAllUsers}
@@ -425,10 +406,6 @@ export default function App() {
           updateUser={updateUser}
           deleteUser={deleteUser}
           updateUserPassword={updateUserPassword}
-          getUserExtractionTypes={getUserExtractionTypes}
-          updateUserExtractionTypes={updateUserExtractionTypes}
-          getUserTransformationTypes={getUserTransformationTypes}
-          updateUserTransformationTypes={updateUserTransformationTypes}
           getUserExecuteCategories={getUserExecuteCategories}
           updateUserExecuteCategories={updateUserExecuteCategories}
           onUpdateSftpConfig={handleUpdateSftpConfig}

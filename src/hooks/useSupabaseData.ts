@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { ExtractionType, TransformationType, SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule, ProcessedEmail, User, ExtractionWorkflow, WorkflowStep, EmailPollingLog, SftpPollingLog, CompanyBranding } from '../types';
+import type { SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule, ProcessedEmail, User, EmailPollingLog, SftpPollingLog, CompanyBranding } from '../types';
 import {
   fetchApiConfig,
   updateApiConfig,
@@ -20,8 +20,6 @@ import {
 import { supabase } from '../lib/supabase';
 
 export function useSupabaseData() {
-  const [extractionTypes, setExtractionTypes] = useState<ExtractionType[]>([]);
-  const [transformationTypes, setTransformationTypes] = useState<TransformationType[]>([]);
   const [sftpConfig, setSftpConfig] = useState<SftpConfig>({
     host: '',
     port: 22,
@@ -59,8 +57,6 @@ export function useSupabaseData() {
   const [emailRules, setEmailRules] = useState<EmailProcessingRule[]>([]);
   const [processedEmails, setProcessedEmails] = useState<ProcessedEmail[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [workflows, setWorkflows] = useState<ExtractionWorkflow[]>([]);
-  const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([]);
   const [emailPollingLogs, setEmailPollingLogs] = useState<EmailPollingLog[]>([]);
   const [sftpPollingLogs, setSftpPollingLogs] = useState<SftpPollingLog[]>([]);
   const [companyBranding, setCompanyBranding] = useState<CompanyBranding>({
@@ -81,13 +77,6 @@ export function useSupabaseData() {
         role: session?.user?.role
       });
 
-      const [extractionTypesData, transformationTypesData] = await Promise.all([
-        fetchExtractionTypesLocal(),
-        fetchTransformationTypesLocal()
-      ]);
-      setExtractionTypes(extractionTypesData);
-      setTransformationTypes(transformationTypesData);
-
       const [sftpConfigData, settingsConfigData, apiConfigData, companyBrandingData] = await Promise.all([
         fetchSftpConfig(),
         fetchSettingsConfig(),
@@ -105,13 +94,6 @@ export function useSupabaseData() {
       ]);
       setEmailConfig(emailConfigData);
       setEmailRules(emailRulesData);
-
-      const [workflowsData, workflowStepsData] = await Promise.all([
-        fetchWorkflowsLocal(),
-        fetchWorkflowStepsLocal()
-      ]);
-      setWorkflows(workflowsData);
-      setWorkflowSteps(workflowStepsData);
 
       const usersData = await loadUsers();
       setUsers(usersData);
@@ -162,98 +144,6 @@ export function useSupabaseData() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  async function fetchExtractionTypesLocal(): Promise<ExtractionType[]> {
-    try {
-      const { data, error } = await supabase
-        .from('extraction_types')
-        .select('*')
-        .order('name');
-      if (error) throw error;
-      return (data || []).map(t => ({
-        id: t.id,
-        name: t.name,
-        defaultInstructions: t.default_instructions || '',
-        formatTemplate: t.format_template || '',
-        filename: t.filename || '',
-        formatType: t.format_type || 'JSON',
-        jsonPath: t.json_path,
-        fieldMappings: typeof t.field_mappings === 'string' ? JSON.parse(t.field_mappings) : (t.field_mappings || []),
-        workflowId: t.workflow_id
-      }));
-    } catch (error) {
-      console.error('Error fetching extraction types:', error);
-      return [];
-    }
-  }
-
-  async function fetchTransformationTypesLocal(): Promise<TransformationType[]> {
-    try {
-      const { data, error } = await supabase
-        .from('transformation_types')
-        .select('*')
-        .order('name');
-      if (error) throw error;
-      return (data || []).map(t => ({
-        id: t.id,
-        name: t.name,
-        defaultInstructions: t.default_instructions || '',
-        formatTemplate: t.format_template || '',
-        filename: t.filename || '',
-        formatType: t.format_type || 'JSON',
-        jsonPath: t.json_path,
-        fieldMappings: typeof t.field_mappings === 'string' ? JSON.parse(t.field_mappings) : (t.field_mappings || []),
-        workflowId: t.workflow_id
-      }));
-    } catch (error) {
-      console.error('Error fetching transformation types:', error);
-      return [];
-    }
-  }
-
-  async function fetchWorkflowsLocal(): Promise<ExtractionWorkflow[]> {
-    try {
-      const { data, error } = await supabase
-        .from('extraction_workflows')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return (data || []).map(w => ({
-        id: w.id,
-        name: w.name,
-        isActive: w.is_active,
-        createdAt: w.created_at,
-        updatedAt: w.updated_at
-      }));
-    } catch (error) {
-      console.error('Error fetching workflows:', error);
-      return [];
-    }
-  }
-
-  async function fetchWorkflowStepsLocal(): Promise<WorkflowStep[]> {
-    try {
-      const { data, error } = await supabase
-        .from('workflow_steps')
-        .select('*')
-        .order('step_order');
-      if (error) throw error;
-      return (data || []).map(s => ({
-        id: s.id,
-        workflowId: s.workflow_id,
-        stepName: s.step_name,
-        stepType: s.step_type,
-        stepOrder: s.step_order,
-        configJson: s.config_json,
-        isEnabled: s.is_enabled,
-        createdAt: s.created_at,
-        updatedAt: s.updated_at
-      }));
-    } catch (error) {
-      console.error('Error fetching workflow steps:', error);
-      return [];
-    }
-  }
 
   const loadUsers = async (): Promise<User[]> => {
     try {
@@ -432,8 +322,6 @@ export function useSupabaseData() {
   };
 
   return {
-    extractionTypes,
-    transformationTypes,
     sftpConfig,
     settingsConfig,
     apiConfig,
@@ -441,8 +329,6 @@ export function useSupabaseData() {
     emailRules,
     processedEmails,
     users,
-    workflows,
-    workflowSteps,
     emailPollingLogs,
     sftpPollingLogs,
     companyBranding,

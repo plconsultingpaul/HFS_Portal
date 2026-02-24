@@ -49,17 +49,11 @@ function AppContent() {
     deleteUser,
     updateUserPassword,
     changeOwnPassword,
-    getUserExtractionTypes,
-    updateUserExtractionTypes,
-    getUserTransformationTypes,
-    updateUserTransformationTypes,
     getUserExecuteCategories,
     updateUserExecuteCategories,
   } = useAuth();
 
   const {
-    extractionTypes,
-    transformationTypes,
     sftpConfig,
     settingsConfig,
     apiConfig,
@@ -67,8 +61,6 @@ function AppContent() {
     emailRules,
     processedEmails,
     users,
-    workflows,
-    workflowSteps,
     emailPollingLogs,
     sftpPollingLogs,
     loading,
@@ -223,8 +215,6 @@ function AppContent() {
               <VendorSetupPage
                 currentUser={user}
                 apiConfig={apiConfig}
-                extractionTypes={extractionTypes}
-                transformationTypes={transformationTypes}
                 getAllUsers={getAllUsers}
                 createUser={createUser}
                 updateUser={updateUser}
@@ -246,7 +236,7 @@ function AppContent() {
             deniedMessage="You do not have permission to access Check-In Setup. This section requires administrator privileges."
           >
             <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
-              <CheckInSetupPage workflows={workflows} />
+              <CheckInSetupPage />
             </LayoutRouter>
           </RoleBasedRoute>
         </PrivateRoute>
@@ -263,8 +253,6 @@ function AppContent() {
             <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
               <ClientSetupPage
                 currentUser={user}
-                extractionTypes={extractionTypes}
-                transformationTypes={transformationTypes}
                 getAllUsers={getAllUsers}
                 createUser={createUser}
                 updateUser={updateUser}
@@ -405,8 +393,6 @@ function AppContent() {
             <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
               <ClientSetupPage
                 currentUser={user}
-                extractionTypes={extractionTypes}
-                transformationTypes={transformationTypes}
                 getAllUsers={getAllUsers}
                 createUser={createUser}
                 updateUser={updateUser}
@@ -461,7 +447,6 @@ function AppContent() {
           >
             <LayoutRouter user={user} companyBranding={companyBranding} onLogout={logout} onChangePassword={changeOwnPassword}>
               <SettingsPage
-                extractionTypes={extractionTypes}
                 sftpConfig={sftpConfig}
                 settingsConfig={settingsConfig}
                 apiConfig={apiConfig}
@@ -469,8 +454,6 @@ function AppContent() {
                 emailRules={emailRules}
                 users={users}
                 currentUser={user}
-                workflows={workflows}
-                workflowSteps={workflowSteps}
                 companyBranding={companyBranding}
                 processedEmails={processedEmails}
                 getAllUsers={getAllUsers}
@@ -478,10 +461,6 @@ function AppContent() {
                 updateUser={updateUser}
                 deleteUser={deleteUser}
                 updateUserPassword={updateUserPassword}
-                getUserExtractionTypes={getUserExtractionTypes}
-                updateUserExtractionTypes={updateUserExtractionTypes}
-                getUserTransformationTypes={getUserTransformationTypes}
-                updateUserTransformationTypes={updateUserTransformationTypes}
                 getUserExecuteCategories={getUserExecuteCategories}
                 updateUserExecuteCategories={updateUserExecuteCategories}
                 onUpdateSftpConfig={handleUpdateSftpConfig}
