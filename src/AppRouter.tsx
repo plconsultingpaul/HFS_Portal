@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from
 import { useAuth } from './hooks/useAuth';
 import { useSupabaseData } from './hooks/useSupabaseData';
 import { DarkModeProvider } from './contexts/DarkModeContext';
-import { LicenseProvider } from './contexts/LicenseContext';
 import { Loader2 } from 'lucide-react';
 
 import LoginPage from './components/LoginPage';
@@ -788,9 +787,7 @@ export default function AppRouter() {
   return (
     <BrowserRouter>
       <DarkModeProvider>
-        <LicenseProvider>
-          <AppContent />
-        </LicenseProvider>
+        <AppContent />
       </DarkModeProvider>
     </BrowserRouter>
   );

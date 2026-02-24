@@ -354,18 +354,6 @@ export interface SettingsConfig {
   password: string;
 }
 
-export interface ParseItLicense {
-  id: string;
-  customerName: string;
-  issuedAt: string;
-  expiryDate: string | null;
-  clientSetup: boolean;
-  vendorSetup: boolean;
-  checkInSetup: boolean;
-  rawPayload: Record<string, unknown>;
-  uploadedAt: string;
-}
-
 export interface Client {
   id: string;
   clientName: string;

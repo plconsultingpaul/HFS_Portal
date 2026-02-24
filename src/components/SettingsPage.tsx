@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FileText, Server, Key, Mail, Filter, Settings as SettingsIcon, Users, Shield, Bell } from 'lucide-react';
+import { FileText, Server, Key, Mail, Filter, Settings as SettingsIcon, Users, Bell } from 'lucide-react';
 import type { SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule, ProcessedEmail, User } from '../types';
 import type { CompanyBranding } from '../types';
 
@@ -11,7 +11,6 @@ import ProcessedEmailsSettings from './settings/ProcessedEmailsSettings';
 import UserManagementSettings from './settings/UserManagementSettings';
 import { Building } from 'lucide-react';
 import CompanyBrandingSettings from './settings/CompanyBrandingSettings';
-import LicenseSettings from './settings/LicenseSettings';
 import NotificationTemplatesSettings from './settings/NotificationTemplatesSettings';
 
 interface SettingsPageProps {
@@ -39,7 +38,7 @@ interface SettingsPageProps {
   refreshCompanyBranding?: () => Promise<void>;
 }
 
-type SettingsTab = 'sftp' | 'api' | 'email' | 'users' | 'branding' | 'license' | 'notifications';
+type SettingsTab = 'sftp' | 'api' | 'email' | 'users' | 'branding' | 'notifications';
 
 export default function SettingsPage({
   sftpConfig,
@@ -73,8 +72,7 @@ export default function SettingsPage({
     ...(currentUser.permissions.emailMonitoring ? [{ id: 'email' as SettingsTab, label: 'Email Monitoring', icon: Mail, description: 'Configure email automation' }] : []),
     ...(currentUser.permissions.notificationTemplates || currentUser.isAdmin ? [{ id: 'notifications' as SettingsTab, label: 'Notification Templates', icon: Bell, description: 'Manage notification templates' }] : []),
     ...(currentUser.permissions.userManagement ? [{ id: 'users' as SettingsTab, label: 'User Management', icon: Users, description: 'Manage users and permissions' }] : []),
-    ...(currentUser.permissions.companyBranding || currentUser.isAdmin ? [{ id: 'branding' as SettingsTab, label: 'Company Branding', icon: Building, description: 'Customize company branding' }] : []),
-    ...(currentUser.isAdmin ? [{ id: 'license' as SettingsTab, label: 'License', icon: Shield, description: 'Manage application license' }] : [])
+    ...(currentUser.permissions.companyBranding || currentUser.isAdmin ? [{ id: 'branding' as SettingsTab, label: 'Company Branding', icon: Building, description: 'Customize company branding' }] : [])
   ];
 
   const renderTabContent = () => {
@@ -128,10 +126,6 @@ export default function SettingsPage({
             refreshCompanyBranding={refreshCompanyBranding}
             isAdmin={currentUser.isAdmin}
           />
-        ) : <PermissionDenied />;
-      case 'license':
-        return currentUser.isAdmin ? (
-          <LicenseSettings />
         ) : <PermissionDenied />;
       case 'notifications':
         return (currentUser.permissions.notificationTemplates || currentUser.isAdmin) ? (

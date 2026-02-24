@@ -5,7 +5,6 @@ import type { CompanyBranding } from '../types';
 import DarkModeToggle from './DarkModeToggle';
 import PermissionDeniedModal from './common/PermissionDeniedModal';
 import { geminiConfigService } from '../services/geminiConfigService';
-import { useLicense } from '../hooks/useLicense';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,7 +19,6 @@ export default function Layout({ children, currentPage, onNavigate, user, compan
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [activeModelName, setActiveModelName] = useState<string>('');
-  const { hasFeature } = useLicense();
   const [permissionDenied, setPermissionDenied] = useState<{
     isOpen: boolean;
     message: string;
@@ -187,10 +185,6 @@ export default function Layout({ children, currentPage, onNavigate, user, compan
       if (!item.roles.includes(user.role)) {
         return false;
       }
-
-      if (item.id === 'client-setup' && !hasFeature('clientSetup')) return false;
-      if (item.id === 'vendor-setup' && !hasFeature('vendorSetup')) return false;
-      if (item.id === 'checkin-setup' && !hasFeature('checkInSetup')) return false;
 
       if (user.role === 'user' && !user.isAdmin) {
         if (item.id === 'logs') {

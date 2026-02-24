@@ -6,7 +6,6 @@ import type { CompanyBranding } from '../types';
 import DarkModeToggle from './DarkModeToggle';
 import ChangePasswordModal from './common/ChangePasswordModal';
 import { geminiConfigService } from '../services/geminiConfigService';
-import { useLicense } from '../hooks/useLicense';
 
 interface LayoutRouterProps {
   children: React.ReactNode;
@@ -22,7 +21,6 @@ export default function LayoutRouter({ children, user, companyBranding, onLogout
   const [activeModelName, setActiveModelName] = useState<string>('');
   const [showChangePassword, setShowChangePassword] = useState(false);
   const location = useLocation();
-  const { hasFeature } = useLicense();
 
   const isSidebarExpanded = !isSidebarCollapsed || isSidebarHovered;
 
@@ -160,10 +158,6 @@ export default function LayoutRouter({ children, user, companyBranding, onLogout
       if (!item.roles.includes(user.role)) {
         return false;
       }
-
-      if (item.id === 'client-setup' && !hasFeature('clientSetup')) return false;
-      if (item.id === 'vendor-setup' && !hasFeature('vendorSetup')) return false;
-      if (item.id === 'checkin-setup' && !hasFeature('checkInSetup')) return false;
 
       if (user.role === 'user' && !user.isAdmin) {
         if (item.id === 'logs') {

@@ -15,7 +15,6 @@ import AddressBookPage from './components/AddressBookPage';
 import DriverCheckinPage from './components/DriverCheckinPage';
 import PermissionDeniedModal from './components/common/PermissionDeniedModal';
 import { useSupabaseData } from './hooks/useSupabaseData';
-import { LicenseProvider } from './contexts/LicenseContext';
 import { Loader2 } from 'lucide-react';
 import type { SftpConfig, SettingsConfig, ApiConfig, EmailMonitoringConfig, EmailProcessingRule, CompanyBranding } from './types';
 
@@ -302,7 +301,7 @@ export default function App() {
   };
 
   return (
-    <LicenseProvider>
+    <>
       <PermissionDeniedModal
         isOpen={permissionDenied.isOpen}
         onClose={() => setPermissionDenied({ isOpen: false, message: '' })}
@@ -414,6 +413,6 @@ export default function App() {
         />
       )}
       </Layout>
-    </LicenseProvider>
+    </>
   );
 }
